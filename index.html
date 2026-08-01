@@ -1,0 +1,4787 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestió de Podcasts - Ordenació per columnes</title>
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 17.5px;
+  color: #1a1a1a;
+  background: #f0efe9;
+  min-height: 100vh;
+}
+
+.app {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+
+#discos-spreadsheet,
+#programes-spreadsheet,
+#dates-spreadsheet {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+header {
+  margin-bottom: 1.5rem;
+}
+
+header h1 {
+  font-size: 27.5px;
+  font-weight: 500;
+}
+
+header p {
+  color: #777;
+  font-size: 16.25px;
+  margin-top: 3px;
+}
+
+.nav {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.nav-btn {
+  padding: 7.5px 17.5px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 16.25px;
+  color: #555;
+  transition: all 0.15s;
+}
+
+.nav-btn.active {
+  background: #1a1a1a;
+  color: #fff;
+  border-color: #1a1a1a;
+  font-weight: 500;
+}
+
+.nav-btn:hover:not(.active) {
+  background: #eee;
+}
+
+.section {
+  display: none;
+}
+
+.section.active {
+  display: block;
+}
+
+h2 {
+  font-size: 22.5px;
+  font-weight: 500;
+  margin-bottom: 1.25rem;
+}
+
+h3 {
+  font-size: 17.5px;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+  color: #555;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 15px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+label {
+  display: block;
+  font-size: 16.25px;
+  color: #555;
+  margin-bottom: 5px;
+  margin-top: 15px;
+}
+
+label:first-child {
+  margin-top: 0;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 10px 12.5px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 17.5px;
+  font-family: inherit;
+  background: #fafafa;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #888;
+  background: #fff;
+  outline: none;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 300px;
+  font-family: monospace;
+}
+
+.btn {
+  padding: 8.75px 20px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 16.25px;
+  transition: all 0.15s;
+}
+
+.btn:hover {
+  background: #f0f0f0;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-primary {
+  background: #1a1a1a;
+  color: #fff;
+  border-color: #1a1a1a;
+}
+
+.btn-primary:hover {
+  background: #333;
+}
+
+.btn-danger {
+  color: #c0392b;
+  border-color: #f5c6c6;
+}
+
+.btn-danger:hover {
+  background: #fff0f0;
+}
+
+.btn-warn {
+  background: #e67e22;
+  color: #fff;
+  border-color: #e67e22;
+}
+
+.btn-warn:hover {
+  background: #d35400;
+}
+
+.btn-success {
+  background: #1a7a4a;
+  color: #fff;
+  border-color: #1a7a4a;
+}
+
+.btn-success:hover {
+  background: #15623c;
+}
+
+.btn-sm {
+  padding: 3.75px 11.25px;
+  font-size: 15px;
+}
+
+.btn-purple {
+  background: #9b59b6;
+  color: #fff;
+  border-color: #9b59b6;
+}
+
+.btn-purple:hover {
+  background: #8e44ad;
+}
+
+.disco-navegacio {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  gap: 12.5px;
+  flex-wrap: wrap;
+  background: #f8f9fa;
+  padding: 12.5px 18.75px;
+  border-radius: 12.5px;
+  border: 1px solid #e5e5e5;
+}
+
+.disco-navegacio-info {
+  font-size: 16.25px;
+  color: #555;
+  background: #e9ecef;
+  padding: 6.25px 15px;
+  border-radius: 25px;
+}
+
+.disco-navegacio-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2.5px 10px;
+  border-radius: 125px;
+  font-size: 13.75px;
+  font-weight: 500;
+}
+
+.badge-blue {
+  background: #e6f1fb;
+  color: #0c447c;
+}
+
+.badge-teal {
+  background: #e1f5ee;
+  color: #085041;
+}
+
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12.5px;
+  margin-bottom: 1.25rem;
+}
+
+.stat {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 12.5px;
+  padding: 0.9375rem 1.25rem;
+}
+
+.stat-label {
+  font-size: 15px;
+  color: #888;
+}
+
+.stat-val {
+  font-size: 30px;
+  font-weight: 500;
+  margin-top: 2.5px;
+}
+
+.search-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 0.625rem;
+  flex-wrap: wrap;
+}
+
+.search-bar input {
+  flex: 1;
+  min-width: 200px;
+}
+
+.empty {
+  text-align: center;
+  padding: 2.5rem;
+  color: #bbb;
+  font-size: 17.5px;
+}
+
+.bulk-bar {
+  display: none;
+  background: #fff8e6;
+  border: 1px solid #f0c040;
+  border-radius: 12.5px;
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 0.9375rem;
+  align-items: center;
+  gap: 12.5px;
+  flex-wrap: wrap;
+}
+
+.bulk-bar.visible {
+  display: flex;
+}
+
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #1a1a1a;
+}
+
+.prog-selector {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+  background: #fafafa;
+  margin-top: 10px;
+}
+
+.prog-option {
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 16.25px;
+}
+
+.prog-option:hover {
+  background: #f0f0f0;
+}
+
+.prog-option.selected {
+  background: #e6f1fb;
+  color: #0c447c;
+  font-weight: 500;
+}
+
+.notes-toolbar {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 15px;
+}
+
+.tab-inner {
+  display: flex;
+  gap: 7.5px;
+  margin-bottom: 0.9375rem;
+}
+
+.tab-inner .nav-btn {
+  font-size: 15px;
+  padding: 5px 15px;
+}
+
+.detail-panel {
+  background: #f5f4f0;
+  border-radius: 10px;
+  padding: 1.25rem;
+  min-height: 700px;
+  white-space: pre-wrap;
+  font-size: 16.25px;
+  line-height: 1.6;
+  color: #333;
+  overflow-y: auto;
+}
+
+.form-actions {
+  margin-top: 1.25rem;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.msg {
+  font-size: 16.25px;
+  color: #27ae60;
+}
+
+.err {
+  font-size: 16.25px;
+  color: #c0392b;
+}
+
+.spreadsheet-container {
+  background: #fff;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.spreadsheet-toolbar {
+  display: flex;
+  gap: 10px;
+  padding: 12.5px 15px;
+  background: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.spreadsheet-stats {
+  font-size: 15px;
+  color: #475569;
+  margin-left: auto;
+  font-weight: 500;
+}
+
+.filter-bar {
+  display: flex;
+  gap: 10px;
+  padding: 15px 18.75px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 7.5px;
+  background: white;
+  padding: 5px 15px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.filter-group span {
+  font-size: 13.75px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.filter-input {
+  min-width: 125px;
+  padding: 7.5px 10px;
+  font-size: 15px;
+  border: none;
+  background: transparent;
+  outline: none;
+}
+
+.filter-input:focus {
+  border-bottom: 2px solid #3498db;
+}
+
+.filter-label {
+  font-size: 13.75px;
+  color: #64748b;
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+.clear-filters {
+  background: #e2e8f0;
+  border: none;
+  padding: 7.5px 17.5px;
+  font-size: 13.75px;
+  border-radius: 7.5px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.clear-filters:hover {
+  background: #cbd5e1;
+}
+
+.spreadsheet-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 16px;
+}
+
+.spreadsheet-table th {
+  background: #2c3e50;
+  color: #ecf0f1;
+  padding: 9px 10px;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  cursor: pointer;
+  user-select: none;
+}
+
+.spreadsheet-table th:hover {
+  background: #3e5a6f;
+}
+
+.spreadsheet-table th.sort-asc::after {
+  content: ' ↑';
+}
+
+.spreadsheet-table th.sort-desc::after {
+  content: ' ↓';
+}
+
+.spreadsheet-table td {
+  padding: 4px 10px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+}
+
+.spreadsheet-table td.editable {
+  cursor: cell;
+}
+
+.spreadsheet-table td.editable:hover {
+  background: #fff3cd;
+}
+
+.spreadsheet-table td.selected-cell {
+  background-color: #b8d9ff !important;
+  outline: 2px solid #1e88e5;
+}
+
+.spreadsheet-table input.spreadsheet-input {
+  width: 100%;
+  border: none;
+  padding: 3px 0;
+  font-size: 16px;
+  background: transparent;
+  outline: none;
+}
+
+.spreadsheet-table input.spreadsheet-input:focus {
+  border-bottom: 2px solid #3498db;
+}
+
+.spreadsheet-table select.spreadsheet-select {
+  width: 100%;
+  border: none;
+  font-size: 16px;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+}
+
+.spreadsheet-table tr.selected-row td {
+  background: #fff8e6;
+}
+
+.spreadsheet-table tbody tr {
+  cursor: pointer;
+}
+
+.spreadsheet-table tbody tr:hover td {
+  background: #f0f7ff;
+}
+
+.normal-table td {
+  cursor: pointer;
+}
+
+.normal-table tr:hover td {
+  background: #f0f7ff;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.date-col {
+  width: 110px;
+  min-width: 110px;
+  white-space: nowrap;
+  font-weight: bold;
+}
+
+.color-cell {
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.color-cell:hover {
+  filter: brightness(0.95);
+}
+
+.color-popup {
+  position: fixed;
+  z-index: 1000;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  padding: 15px;
+  border: 1px solid #ddd;
+}
+
+.color-popup-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12.5px;
+  color: #555;
+  text-align: center;
+}
+
+.color-popup-palette {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+}
+
+.color-popup-option {
+  width: 45px;
+  height: 45px;
+  border-radius: 10px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.color-popup-option:hover {
+  transform: scale(1.1);
+  border-color: #333;
+}
+
+.color-verde-claro { background-color: #c8e6c9; }
+.color-verde-oscuro { background-color: #2e7d32; }
+.color-verde-fluorescent { background-color: #00ff00; box-shadow: 0 0 5px #00ff00; }
+.color-azul-claro { background-color: #bbdefb; }
+.color-azul-oscuro { background-color: #1565c0; }
+.color-amarillo { background-color: #fff9c4; }
+.color-groc { background-color: #ffeb3b; }
+.color-marron { background-color: #d7ccc8; }
+.color-gris { background-color: #e0e0e0; }
+.color-negro { background-color: #424242; }
+.color-rojo { background-color: #ffcdd2; }
+.color-rojo-intenso { background-color: #ff0000; box-shadow: 0 0 5px #ff0000; }
+.color-rosa { background-color: #f8bbd0; }
+.color-lila { background-color: #e1bee7; }
+
+/* ===== Panell lateral esquerre per triar color (substitueix el popup emergent) ===== */
+.color-sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.25);
+  z-index: 1400;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.color-sidebar-overlay.open { opacity: 1; }
+
+.color-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100dvh;
+  width: 300px;
+  max-width: 85vw;
+  background: #fff;
+  z-index: 1401;
+  box-shadow: 4px 0 24px rgba(0,0,0,0.18);
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  overflow-y: auto;
+}
+.color-sidebar.open { transform: translateX(0); }
+
+.color-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.color-sidebar-header span {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+.color-sidebar-close {
+  border: none;
+  background: #f0f0f0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 15px;
+  color: #555;
+  line-height: 1;
+}
+.color-sidebar-close:hover { background: #e0e0e0; }
+
+.color-sidebar-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #999;
+  margin: 18px 0 10px;
+}
+.color-sidebar-section-title:first-of-type { margin-top: 0; }
+
+.color-sidebar-palette {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.color-sidebar-palette .color-popup-option {
+  width: 100%;
+  aspect-ratio: 1;
+  height: auto;
+}
+.color-sidebar-palette .color-popup-option.selected {
+  border-color: #1a1a1a;
+  box-shadow: 0 0 0 2px #fff inset, 0 0 0 3px #1a1a1a;
+}
+
+.color-sidebar-custom {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #f7f7f5;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 14px;
+}
+.color-sidebar-custom-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.color-sidebar-swatch-input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 56px;
+  height: 56px;
+  border: none;
+  border-radius: 12px;
+  padding: 0;
+  cursor: pointer;
+  background: none;
+  flex-shrink: 0;
+}
+.color-sidebar-swatch-input::-webkit-color-swatch-wrapper { padding: 0; border-radius: 12px; }
+.color-sidebar-swatch-input::-webkit-color-swatch { border: 1px solid #ddd; border-radius: 12px; }
+.color-sidebar-swatch-input::-moz-color-swatch { border: 1px solid #ddd; border-radius: 12px; }
+
+.color-sidebar-hex {
+  flex: 1;
+  font-family: monospace;
+  text-transform: uppercase;
+}
+.color-sidebar-apply {
+  width: 100%;
+  margin-top: 2px;
+}
+.color-sidebar-remove {
+  width: 100%;
+  margin-top: 6px;
+  font-size: 14px;
+}
+
+@media (max-width: 480px) {
+  .color-sidebar { width: 90vw; padding: 16px; }
+}
+
+.date-selector {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.month-selector {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.month-btn {
+  padding: 5px 12px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  background: white;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.month-btn.active {
+  background: #1a1a1a;
+  color: white;
+  border-color: #1a1a1a;
+}
+
+.year-nav {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.year-nav button {
+  padding: 5px 10px;
+  font-size: 14px;
+}
+
+.line-color-btn {
+  background: #e2e8f0;
+  border: none;
+  padding: 5px 12px;
+  font-size: 12px;
+  border-radius: 15px;
+  cursor: pointer;
+}
+
+.line-color-btn:hover {
+  background: #cbd5e1;
+}
+
+.sort-btn {
+  background: #e2e8f0;
+  border: none;
+  padding: 5px 12px;
+  font-size: 12px;
+  border-radius: 15px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.sort-btn:hover {
+  background: #cbd5e1;
+}
+
+.btn-danger-bg {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-danger-bg:hover {
+  background: #c82333;
+}
+
+.preview-table {
+  margin-top: 15px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  overflow-x: auto;
+  max-height: 300px;
+  font-size: 14px;
+}
+
+.preview-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.preview-table th, .preview-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.preview-table th {
+  background: #e9ecef;
+  font-weight: 600;
+}
+
+.prog-filter-dates {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 8px 15px;
+  border-radius: 10px;
+  color: white;
+}
+
+.prog-filter-dates input {
+  width: 180px;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 20px;
+  border: none;
+}
+
+.prog-filter-dates button {
+  background: rgba(255,255,255,0.2);
+  color: white;
+  border: none;
+}
+
+.prog-filter-dates button:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+.filter-info {
+  font-size: 12px;
+  margin-left: 10px;
+  opacity: 0.9;
+}
+
+.backup-indicator {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #1a7a4a;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 30px;
+  font-size: 14px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  transition: opacity 0.3s;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.backup-indicator.show {
+  opacity: 1;
+}
+
+.backup-indicator .spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.backup-timer {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: #2c3e50;
+  color: #ecf0f1;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-family: monospace;
+  z-index: 1000;
+}
+
+@media (max-width: 768px) {
+  .stat-row { grid-template-columns: repeat(2, 1fr); }
+  .filter-group { flex-wrap: wrap; width: 100%; }
+  .filter-group span { min-width: 60px; }
+  .spreadsheet-toolbar { flex-direction: column; align-items: stretch; }
+  .spreadsheet-stats { margin-left: 0; text-align: center; }
+  .color-popup-palette { grid-template-columns: repeat(4, 1fr); }
+  .date-selector { flex-direction: column; align-items: stretch; }
+  .month-selector { justify-content: center; }
+  .prog-filter-dates { justify-content: center; flex-wrap: wrap; }
+  .backup-timer { bottom: 70px; }
+}
+
+/* ===== MODAL DE CONFIRMACIÓ ===== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 9000;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.show {
+  display: flex;
+}
+.modal-box {
+  background: #fff;
+  border-radius: 18px;
+  padding: 2rem 2rem 1.5rem;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.22);
+  animation: modalIn 0.15s ease;
+}
+@keyframes modalIn {
+  from { transform: scale(0.93); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+.modal-icon {
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 0.75rem;
+}
+.modal-title {
+  font-size: 19px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  color: #1a1a1a;
+}
+.modal-msg {
+  font-size: 15.5px;
+  color: #555;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+.modal-actions .btn {
+  min-width: 110px;
+}
+
+/* ===== CERCA GLOBAL ===== */
+.global-search-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.global-search-input {
+  width: 260px;
+  padding: 8px 36px 8px 14px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  font-size: 15.5px;
+  background: #fff;
+  transition: border-color 0.15s, width 0.2s;
+  outline: none;
+}
+.global-search-input:focus {
+  border-color: #555;
+  width: 320px;
+}
+.global-search-icon {
+  position: absolute;
+  right: 12px;
+  color: #aaa;
+  pointer-events: none;
+  font-size: 15px;
+}
+.global-search-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 420px;
+  max-width: 95vw;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 14px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.13);
+  z-index: 5000;
+  max-height: 400px;
+  overflow-y: auto;
+}
+.global-search-dropdown.show { display: block; }
+.gs-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 10px 14px 4px;
+}
+.gs-item {
+  padding: 9px 14px;
+  cursor: pointer;
+  font-size: 15px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  border-radius: 0;
+  transition: background 0.1s;
+}
+.gs-item:hover { background: #f0f7ff; }
+.gs-item-label { color: #1a1a1a; font-weight: 500; }
+.gs-item-sub   { color: #888; font-size: 13.5px; }
+.gs-empty {
+  padding: 1.5rem;
+  text-align: center;
+  color: #bbb;
+  font-size: 15px;
+}
+.gs-divider {
+  height: 1px;
+  background: #f0f0f0;
+  margin: 4px 0;
+}
+
+/* ===== UNDO TOAST ===== */
+.undo-toast {
+  position: fixed;
+  bottom: 70px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #2c3e50;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-size: 14.5px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.25);
+  z-index: 8000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.undo-toast.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+.undo-toast button {
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13.5px;
+}
+.undo-toast button:hover { background: rgba(255,255,255,0.3); }
+
+/* ===== INDICADOR localStorage ===== */
+.ls-status {
+  position: fixed;
+  bottom: 60px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  z-index: 1001;
+}
+.ls-bar-wrap {
+  background: rgba(44,62,80,0.85);
+  color: #ecf0f1;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-family: monospace;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ls-bar-fill {
+  height: 5px;
+  border-radius: 5px;
+  background: #27ae60;
+  transition: width 0.3s, background 0.3s;
+  width: 0%;
+}
+.ls-bar-bg {
+  width: 80px;
+  height: 5px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.ls-bar-fill.warn  { background: #e67e22; }
+.ls-bar-fill.crit  { background: #e74c3c; }
+.ls-alert {
+  background: #e74c3c;
+  color: #fff;
+  padding: 7px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  display: none;
+}
+.ls-alert.show { display: block; }
+
+/* ===== COMPTADOR NOTES ===== */
+.notes-counter {
+  text-align: right;
+  font-size: 13px;
+  color: #aaa;
+  margin-top: 4px;
+  font-family: monospace;
+}
+.notes-counter.warn { color: #e67e22; }
+
+/* ===== REDIMENSIONAT DE COLUMNES ===== */
+.spreadsheet-table th {
+  position: relative;
+}
+.col-resizer {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  user-select: none;
+  z-index: 20;
+  background: transparent;
+}
+.col-resizer:hover, .col-resizer.resizing {
+  background: rgba(255,255,255,0.35);
+}
+
+/* ===== FILTRE PRODUÏT TEXT ===== */
+.filter-produit-text-group {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: white;
+  padding: 5px 12px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  border-left: 3px solid #9b59b6;
+}
+.filter-produit-text-group span {
+  font-size: 13.75px;
+  color: #64748b;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.filter-produit-mode-select {
+  border: 1px solid #ddd;
+  border-radius: 7px;
+  padding: 5px 8px;
+  font-size: 13.5px;
+  background: #f8fafc;
+  color: #444;
+  cursor: pointer;
+  outline: none;
+}
+.filter-produit-mode-select:focus { border-color: #9b59b6; }
+
+/* ===== ESTILS DEL GENERADOR (Jazz Expresso) ===== */
+#gen-app {
+  --bg:#171411; --bg2:#1e1a16; --panel:#221d18;
+  --parchment:#efe6d3; --dim:#a89a80; --brass:#c9973e;
+  --line:rgba(239,230,211,0.14);
+  background: var(--bg);
+  color: var(--parchment);
+  font-family: 'Work Sans', sans-serif;
+  padding: 0;
+}
+
+#gen-app .gen-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 20px 22px;
+  margin-bottom: 20px;
+}
+#gen-app .gen-panel h2 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brass);
+  margin: 0 0 16px;
+}
+#gen-app label {
+  display: block;
+  font-size: 12.5px;
+  color: var(--dim);
+  margin-bottom: 5px;
+  margin-top: 14px;
+}
+#gen-app label:first-of-type { margin-top: 0; }
+#gen-app input[type="text"], #gen-app textarea, #gen-app select {
+  width: 100%;
+  background: var(--bg2);
+  border: 1px solid var(--line);
+  color: var(--parchment);
+  padding: 9px 11px;
+  border-radius: 4px;
+  font-family: 'Work Sans', sans-serif;
+  font-size: 14px;
+}
+#gen-app textarea {
+  resize: vertical;
+  min-height: 640px;
+  line-height: 1.5;
+}
+#gen-app input:focus, #gen-app textarea:focus, #gen-app select:focus {
+  outline: none;
+  border-color: var(--brass);
+}
+#gen-app .gen-row2 { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; }
+#gen-app .gen-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+#gen-app .gen-album {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 18px;
+  margin-bottom: 16px;
+  position: relative;
+}
+#gen-app .gen-album-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+#gen-app .gen-album-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--dim);
+}
+#gen-app .gen-swatches {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+#gen-app .gen-swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+#gen-app .gen-swatch.sel { border-color: var(--parchment); }
+#gen-app .gen-btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--brass);
+  color: #171411;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+#gen-app .gen-btn.ghost {
+  background: transparent;
+  color: var(--parchment);
+  border: 1px solid var(--line);
+}
+#gen-app .gen-btn.danger {
+  background: transparent;
+  color: #c97b6a;
+  border: 1px solid #4a2e28;
+}
+#gen-app .gen-btn.small { padding: 6px 12px; font-size: 11px; }
+#gen-app .gen-btns-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+#gen-app .gen-hint {
+  font-size: 11.5px;
+  color: var(--dim);
+  margin-top: 4px;
+}
+#gen-app textarea.gen-output {
+  width: 100%;
+  min-height: 260px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  background: #0f0d0b;
+  color: #d8cdb4;
+  border: 1px solid var(--line);
+  padding: 9px 11px;
+  border-radius: 4px;
+}
+#gen-app .gen-top-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+#gen-app .gen-copied {
+  font-size: 12.5px;
+  color: #8fbf8a;
+  opacity: 0;
+  transition: opacity .25s;
+}
+#gen-app .gen-copied.show { opacity: 1; }
+#gen-app .gen-img-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+#gen-app .gen-paste-zone {
+  flex: 0 0 120px;
+  height: 120px;
+  border: 1.5px dashed var(--line);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--dim);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg2);
+}
+#gen-app .gen-paste-zone img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+#gen-app .gen-paste-zone span {
+  padding: 8px;
+  position: relative;
+  z-index: 1;
+}
+#gen-app .gen-paste-zone.has-img span { display: none; }
+#gen-app .gen-img-actions { flex: 1; }
+#gen-app .gen-img-actions input { margin-bottom: 8px; }
+/* Botons de moviment dins del generador */
+#gen-app .gen-move-btns {
+  display: flex;
+  gap: 4px;
+}
+#gen-app .gen-move-btn {
+  padding: 2px 8px;
+  font-size: 11px;
+  background: var(--bg2);
+  border: 1px solid var(--line);
+  color: var(--parchment);
+  border-radius: 4px;
+  cursor: pointer;
+}
+#gen-app .gen-move-btn:hover { background: var(--panel); }
+#gen-app .gen-move-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+</style>
+</head>
+<body>
+
+<!-- Banner de reconnexió de fitxer -->
+<div id="reconnect-banner" style="display:none;position:sticky;top:0;z-index:9000;background:#e67e22;color:#fff;padding:12px 20px;text-align:center;font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,0.2)">
+  📂 Tens un fitxer de dades vinculat: <strong id="reconnect-filename"></strong> &nbsp;
+  <button onclick="reattachFile()" style="background:#fff;color:#e67e22;border:none;border-radius:8px;padding:6px 16px;cursor:pointer;font-weight:bold;font-size:14px">🔓 Reconnectar i carregar dades</button>
+  &nbsp;<small style="opacity:0.8">(fins que no reconnectis, es carreguen les dades del navegador)</small>
+</div>
+<div class="app">
+<header>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+    <div>
+      <h1>🎙️ Gestió de Discos, Programes i Dates</h1>
+      <p>Base de dades de podcasts, episodis, programació i calendari 2026-2030 | 🔽 Clica a les capçaleres per ordenar</p>
+    </div>
+    <div class="global-search-wrap" id="global-search-wrap">
+      <input type="text" class="global-search-input" id="global-search-input" placeholder="🔍 Cerca global..." oninput="onGlobalSearch(this.value)" onfocus="onGlobalSearch(this.value)" autocomplete="off">
+      <span class="global-search-icon">⌕</span>
+      <div class="global-search-dropdown" id="global-search-dropdown"></div>
+    </div>
+  </div>
+</header>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="showSection('dashboard')">📊 Resum</button>
+  <button class="nav-btn" onclick="showSection('discos-list')">💿 Discos</button>
+  <button class="nav-btn" onclick="showSection('discos-spreadsheet')">📊 Discos (Full)</button>
+  <button class="nav-btn" onclick="showSection('discos-form');resetDiscoForm()">➕ Nou Disc</button>
+  <button class="nav-btn" onclick="showSection('programes-list')">📅 Programes</button>
+  <button class="nav-btn" onclick="showSection('programes-spreadsheet')">📊 Programes (Full)</button>
+  <button class="nav-btn" onclick="showSection('programes-form');resetProgForm()">➕ Nou Programa</button>
+  <button class="nav-btn" onclick="showSection('dates')">📆 Dates 2026-2030</button>
+  <button class="nav-btn" onclick="showSection('relacions')">🔗 Relacions</button>
+  <button class="nav-btn" onclick="showSection('importacio-rapida')">📋 Import</button>
+  <button class="nav-btn" onclick="showSection('generador')">🎛️ Generador HTML</button>
+  <button class="nav-btn" onclick="showSection('exportar')">💾 Backup</button>
+</nav>
+
+<div id="dashboard" class="section active">
+  <div class="stat-row">
+    <div class="stat"><div class="stat-label">Total discos</div><div class="stat-val" id="stat-discos">0</div></div>
+    <div class="stat"><div class="stat-label">Total programes</div><div class="stat-val" id="stat-programes">0</div></div>
+    <div class="stat"><div class="stat-label">Discos vinculats</div><div class="stat-val" id="stat-relacions">0</div></div>
+    <div class="stat"><div class="stat-label">Sense programa</div><div class="stat-val" id="stat-orfes">0</div></div>
+  </div>
+  <div class="two-col">
+    <div class="card"><h3>💿 Últims discos</h3><div id="dash-discos"></div></div>
+    <div class="card"><h3>📅 Últims programes</h3><div id="dash-programes"></div></div>
+  </div>
+</div>
+
+<div id="discos-list" class="section">
+  <h2>💿 Discos</h2>
+  <div class="search-bar">
+    <input type="text" id="disco-search" placeholder="Cercar per Podcast, Episodi, Autor, Temes..." oninput="renderDiscosTable()">
+    <select id="disco-filter-prog" onchange="renderDiscosTable()"></select>
+  </div>
+  <div class="bulk-bar" id="discos-bulk-bar" style="display: none;">
+    <strong id="discos-bulk-count">0 seleccionats</strong>
+    <button class="btn btn-purple btn-sm" onclick="exportSelectedNotes()">📝 Exportar Notes seleccionades</button>
+    <button class="btn btn-sm" onclick="clearSelectedDiscos()">✕ Desseleccionar tot</button>
+  </div>
+  <div class="table-wrap">
+    <table class="normal-table">
+      <thead><th style="width:45px"><input type="checkbox" id="disco-check-all" onchange="toggleAllDiscos(this)"></th><th>Podcast</th><th>Episodi</th><th>Temes</th><th>Autor</th><th>CD</th><th>Any</th><th>Programa</th><th>Accions</th></thead>
+      <tbody id="discos-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="discos-spreadsheet" class="section">
+  <h2>💿 Discos - Full de càlcul</h2>
+  <p style="font-size:15px;color:#666;margin-bottom:10px">✨ <strong>Consell:</strong> Clica a les capçaleres per ordenar | Clica qualsevol cel·la per editar | Ctrl+clic per seleccionar múltiples cel·les | Ctrl+C per copiar</p>
+  <div class="spreadsheet-container">
+    <div class="spreadsheet-toolbar">
+      <button class="btn btn-sm" onclick="addNewDiscoRow()">➕ Afegir fila</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteSelectedSpreadsheetDiscos()">🗑 Eliminar seleccionats</button>
+      <button class="btn btn-sm btn-purple" onclick="exportSelectedNotesFromSpreadsheet()">📝 Exportar Notes seleccionades</button>
+      <button class="btn btn-sm btn-purple" onclick="enviarSeleccionatsAlGenerador()">📤 Enviar seleccionats al generador</button>
+      <button class="btn btn-sm" onclick="selectAllSpreadsheetDiscos()">✓ Seleccionar tot</button>
+      <button class="btn btn-sm" onclick="deselectAllSpreadsheetDiscos()">✕ Desseleccionar</button>
+      <button class="btn btn-sm btn-success" onclick="saveAllDiscosChanges()">💾 Guardar canvis</button>
+      <button class="btn btn-sm" onclick="clearDiscoSort()">🔄 Netejar ordenació</button>
+      <div class="spreadsheet-stats" id="spreadsheet-disco-stats"></div>
+    </div>
+    <div class="filter-bar">
+      <div class="filter-group"><span>🎙️ Podcast:</span><input type="text" id="filter-disco-podcast" class="filter-input" placeholder="Filtrar..." oninput="applyDiscoFilters()"></div>
+      <div class="filter-group"><span>📌 Episodi:</span><input type="text" id="filter-disco-episodi" class="filter-input" placeholder="Filtrar..." oninput="applyDiscoFilters()"></div>
+      <div class="filter-group"><span>🏷️ Temes:</span><input type="text" id="filter-disco-temes" class="filter-input" placeholder="Filtrar..." oninput="applyDiscoFilters()"></div>
+      <div class="filter-group"><span>👤 Autor:</span><input type="text" id="filter-disco-autor" class="filter-input" placeholder="Filtrar..." oninput="applyDiscoFilters()"></div>
+      <div class="filter-group"><span>💿 CD:</span><input type="text" id="filter-disco-cd" class="filter-input" placeholder="Filtrar..." oninput="applyDiscoFilters()"></div>
+      <div class="filter-group"><span>📅 Any:</span><input type="text" id="filter-disco-any" class="filter-input" placeholder="Filtrar..." oninput="applyDiscoFilters()"></div>
+      <button class="clear-filters" onclick="clearDiscoFilters()">✖ Netejar filtres</button>
+    </div>
+    <div class="filter-bar" style="background: #e8f5e9; border-bottom: 2px solid #4caf50;">
+      <span class="filter-label">📭 Filtrar per camps buits:</span>
+      <label style="display: inline-flex; align-items: center; gap: 5px; margin-right: 15px;"><input type="checkbox" id="filter-empty-podcast" onchange="applyDiscoFilters()"> Podcast buit</label>
+      <label style="display: inline-flex; align-items: center; gap: 5px; margin-right: 15px;"><input type="checkbox" id="filter-empty-episodi" onchange="applyDiscoFilters()"> Episodi buit</label>
+      <label style="display: inline-flex; align-items: center; gap: 5px; margin-right: 15px;"><input type="checkbox" id="filter-empty-temes" onchange="applyDiscoFilters()"> Temes buit</label>
+      <label style="display: inline-flex; align-items: center; gap: 5px; margin-right: 15px;"><input type="checkbox" id="filter-empty-autor" onchange="applyDiscoFilters()"> Autor buit</label>
+      <label style="display: inline-flex; align-items: center; gap: 5px; margin-right: 15px;"><input type="checkbox" id="filter-empty-cd" onchange="applyDiscoFilters()"> CD buit</label>
+      <label style="display: inline-flex; align-items: center; gap: 5px; margin-right: 15px;"><input type="checkbox" id="filter-empty-any" onchange="applyDiscoFilters()"> Any buit</label>
+      <label style="display: inline-flex; align-items: center; gap: 5px; margin-right: 15px;"><input type="checkbox" id="filter-empty-link" onchange="applyDiscoFilters()"> Link buit</label>
+      <label style="display: inline-flex; align-items: center; gap: 5px;"><input type="checkbox" id="filter-empty-notes" onchange="applyDiscoFilters()"> Notes buit</label>
+    </div>
+    <div style="overflow-x:auto; max-height:60vh; overflow-y:auto">
+      <table class="spreadsheet-table" id="discos-spreadsheet-table">
+        <thead>
+          <tr>
+            <th style="width:50px"><input type="checkbox" id="spreadsheet-select-all" onchange="toggleAllSpreadsheetDiscos(this)"></th>
+            <th onclick="sortDiscos('podcast')">🎙️ Podcast <span id="sort-podcast"></span></th>
+            <th onclick="sortDiscos('episodi')">📌 Episodi <span id="sort-episodi"></span></th>
+            <th onclick="sortDiscos('temes')">🏷️ Temes <span id="sort-temes"></span></th>
+            <th onclick="sortDiscos('autor')">👤 Autor <span id="sort-autor"></span></th>
+            <th onclick="sortDiscos('cd')">💿 CD <span id="sort-cd"></span></th>
+            <th onclick="sortDiscos('any')">📅 Any <span id="sort-any"></span></th>
+            <th onclick="sortDiscos('link')">🔗 Link <span id="sort-link"></span></th>
+            <th onclick="sortDiscos('notes')">📝 Notes <span id="sort-notes"></span></th>
+            <th>📺 Programa</th>
+            <th style="width:100px">⚡ Accions</th>
+           </>
+        </thead>
+        <tbody id="discos-spreadsheet-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="discos-form" class="section">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:10px">
+    <h2 style="margin:0" id="disco-form-title">Nou Disc</h2>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="guardarDiscActual()">💾 Guardar disc</button>
+      <button class="btn" id="btn-color-disc" onclick="obrirSelectorColorDisc(event)">🎨 Canviar color <span id="disco-color-swatch" style="display:inline-block;width:14px;height:14px;border-radius:4px;border:1px solid #bbb;margin-left:6px;vertical-align:middle;background-color:transparent"></span></button>
+      <button class="btn" onclick="showSection('discos-spreadsheet')">← Tornar al full de càlcul</button>
+    </div>
+  </div>
+  <div class="disco-navegacio">
+    <div class="disco-navegacio-info"><span id="disco-navegacio-counter">—</span></div>
+    <div class="disco-navegacio-buttons">
+      <button class="btn btn-sm" onclick="navegarDiscAnterior()" id="btn-anterior">◀ Anterior</button>
+      <button class="btn btn-sm btn-primary" onclick="guardarDiscActualINavegar('nou')">✨ Nou</button>
+      <button class="btn btn-sm" onclick="navegarDiscSeguent()" id="btn-seguent">Següent ▶</button>
+    </div>
+  </div>
+  <input type="hidden" id="disco-id">
+  <div class="two-col">
+    <div class="card">
+      <h3>📝 Informació del disc</h3>
+      <label>🎙️ Podcast</label><input type="text" id="d-podcast">
+      <label>📌 Episodi</label><input type="text" id="d-episodi">
+      <label>🏷️ Temes</label><input type="text" id="d-temes">
+      <label>👤 Autor</label><input type="text" id="d-autor">
+      <label>💿 CD</label><input type="text" id="d-cd">
+      <label>📅 Any</label><input type="text" id="d-any">
+      <label>🔗 Link</label><input type="text" id="d-link">
+      <div style="margin-top:1.5rem"><h3>📅 Programa associat</h3><div class="prog-selector" id="prog-selector-list"></div></div>
+    </div>
+    <div class="card">
+      <h3>📝 Notes</h3>
+      <div class="tab-inner"><button class="nav-btn active" id="tab-editor" onclick="setNotesMode('editor')">✏️ Editor</button><button class="nav-btn" id="tab-preview" onclick="setNotesMode('preview')">👁 Vista</button></div>
+      <div id="notes-editor-wrap"><textarea id="d-notes" style="min-height:700px;font-family:monospace" placeholder="Escriu aquí les notes..." oninput="updateNotesCounter()"></textarea><div class="notes-counter" id="notes-counter">0 caràcters</div><div class="notes-toolbar"><button class="btn btn-sm" onclick="insertNotes('• ')">• Punt</button><button class="btn btn-sm" onclick="insertNotes('———\n')">— Línia</button><button class="btn btn-sm" onclick="insertNotes('['+new Date().toLocaleDateString('ca-ES')+'] ')">📅 Data</button><button class="btn btn-sm" onclick="insertNotes('⭐ ')">⭐</button><button class="btn btn-sm" onclick="insertNotes('TODO: ')">✅ TODO</button><button class="btn btn-sm" onclick="insertNotes('⚠️ ')">⚠️</button></div></div>
+      <div id="notes-preview-wrap" style="display:none"><div class="detail-panel" id="notes-preview-content"></div></div>
+    </div>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-primary" onclick="guardarDiscActual()">💾 Guardar disc</button>
+    <button class="btn btn-danger" onclick="eliminarDiscActual()">🗑 Eliminar disc</button>
+    <button class="btn" onclick="resetDiscoForm()">Netejar</button>
+    <span class="msg" id="disco-msg"></span>
+  </div>
+</div>
+
+<div id="programes-list" class="section">
+  <h2>📅 Programes</h2>
+  <div class="search-bar">
+    <input type="text" id="prog-search" placeholder="Cercar per Nº, Episodi, Programa, Produït..." oninput="renderProgramesTable()">
+  </div>
+  <div class="bulk-bar" id="prog-bulk-bar">
+    <strong id="prog-bulk-count">0 seleccionats</strong>
+    <button class="btn btn-warn btn-sm" onclick="bulkDeleteProgrames()">🗑 Eliminar seleccionats</button>
+    <button class="btn btn-sm" onclick="bulkDeselectProgrames()">✕ Desseleccionar tot</button>
+  </div>
+  <div class="table-wrap">
+    <table class="normal-table">
+      <thead>
+        <tr>
+          <th style="width:45px"><input type="checkbox" id="prog-check-all" onchange="toggleAllProgrames(this)"></th>
+          <th>Nº Programa</th>
+          <th>Episodi</th>
+          <th>Programa</th>
+          <th>Produït</th>
+          <th>Data producció</th>
+          <th>Data emissió</th>
+          <th>Discos vinculats</th>
+          <th>Accions</th>
+         </>
+      </thead>
+      <tbody id="programes-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="programes-spreadsheet" class="section">
+  <h2>📅 Programes - Full de càlcul</h2>
+  <p style="font-size:15px;color:#666;margin-bottom:10px">✨ <strong>Consell:</strong> Clica a les capçaleres per ordenar | Clica qualsevol cel·la per editar | Ctrl+clic per seleccionar múltiples cel·les | Ctrl+C per copiar</p>
+  <div class="spreadsheet-container">
+    <div class="spreadsheet-toolbar">
+      <button class="btn btn-sm" onclick="addNewProgRow()">➕ Afegir fila</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteSelectedSpreadsheetProgrames()">🗑 Eliminar seleccionats</button>
+      <button class="btn btn-sm" onclick="selectAllSpreadsheetProgrames()">✓ Seleccionar tot</button>
+      <button class="btn btn-sm" onclick="deselectAllSpreadsheetProgrames()">✕ Desseleccionar</button>
+      <button class="btn btn-sm btn-success" onclick="saveAllProgramesChanges()">💾 Guardar canvis</button>
+      <div class="spreadsheet-stats" id="spreadsheet-prog-stats"></div>
+    </div>
+    <div class="filter-bar">
+      <span class="filter-label">🔍 Filtres:</span>
+      <div class="filter-group"><span>🔢 Nº Programa:</span><input type="text" id="filter-prog-num" class="filter-input" placeholder="Filtrar..." oninput="applyProgFilters()"></div>
+      <div class="filter-group"><span>📌 Episodi:</span><input type="text" id="filter-prog-episodi" class="filter-input" placeholder="Filtrar..." oninput="applyProgFilters()"></div>
+      <div class="filter-group"><span>📺 Programa:</span><input type="text" id="filter-prog-programa" class="filter-input" placeholder="Filtrar..." oninput="applyProgFilters()"></div>
+      <div class="filter-group"><span>🏭 Produït (simple):</span><input type="text" id="filter-prog-produit" class="filter-input" placeholder="Filtrar..." oninput="applyProgFilters()"></div>
+      <button class="clear-filters" onclick="clearProgFilters()">✖ Netejar filtres</button>
+    </div>
+    <div class="filter-bar" style="background:#f3e8ff; border-bottom: 2px solid #9b59b6;">
+      <div class="filter-produit-text-group">
+        <span>🔎 Produït:</span>
+        <select id="filter-prog-produit-mode" class="filter-produit-mode-select" onchange="applyProgFilters()">
+          <option value="">— Sense filtre —</option>
+          <option value="conté">Conté</option>
+          <option value="no-conté">No conté</option>
+        </select>
+        <input type="text" id="filter-prog-produit-text" class="filter-input" placeholder="text a cercar..." oninput="applyProgFilters()" style="min-width:160px">
+      </div>
+    </div>
+    <div style="overflow-x:auto; max-height:60vh; overflow-y:auto">
+      <table class="spreadsheet-table" id="programes-spreadsheet-table">
+        <thead>
+          <tr>
+            <th style="width:50px"><input type="checkbox" id="spreadsheet-prog-select-all" onchange="toggleAllSpreadsheetProgrames(this)"></th>
+            <th onclick="sortProgrames('num')" style="cursor:pointer">🔢 Nº Programa <span id="sort-prog-num"></span></th>
+            <th onclick="sortProgrames('episodi')" style="cursor:pointer">📌 Episodi <span id="sort-prog-episodi"></span></th>
+            <th onclick="sortProgrames('programa')" style="cursor:pointer">📺 Programa <span id="sort-prog-programa"></span></th>
+            <th onclick="sortProgrames('produit')" style="cursor:pointer">🏭 Produït <span id="sort-prog-produit"></span></th>
+            <th onclick="sortProgrames('dataProd')" style="cursor:pointer">📅 Data producció <span id="sort-prog-dataProd"></span></th>
+            <th onclick="sortProgrames('dataEmissio')" style="cursor:pointer">📅 Data emissió <span id="sort-prog-dataEmissio"></span></th>
+            <th style="width:100px">⚡ Accions</th>
+           </>
+        </thead>
+        <tbody id="programes-spreadsheet-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="programes-form" class="section">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:10px">
+    <h2 style="margin:0" id="prog-form-title">Nou Programa</h2>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="saveProg()">💾 Guardar programa</button>
+      <button class="btn" id="btn-color-prog" onclick="obrirSelectorColorProg(event)">🎨 Canviar color <span id="prog-color-swatch" style="display:inline-block;width:14px;height:14px;border-radius:4px;border:1px solid #bbb;margin-left:6px;vertical-align:middle;background-color:transparent"></span></button>
+      <button class="btn" onclick="showSection('programes-list')">← Tornar a la llista</button>
+    </div>
+  </div>
+  <input type="hidden" id="prog-id">
+
+  <div style="display:flex;gap:1.5rem;align-items:flex-start;flex-wrap:wrap">
+    <!-- Columna esquerra: formulari -->
+    <div style="flex:0 0 auto;width:100%;max-width:650px">
+      <div class="card">
+        <label>🔢 Nº Programa <span style="color:#c0392b">*</span></label>
+        <input id="p-num" placeholder="Ex: 001, P-42...">
+        <label>📌 Episodi</label><input id="p-episodi">
+        <label>📺 Programa</label><input id="p-programa">
+        <label>🏭 Produït</label><input id="p-produit">
+        <label>🎨 Color de fons per a "Produït"</label>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; margin-bottom: 12px;">
+          <div class="color-option color-verde-claro" onclick="selectColorForm('verde-claro', '#c8e6c9')" title="Verd clar"></div>
+          <div class="color-option color-verde-oscuro" onclick="selectColorForm('verde-oscuro', '#2e7d32')" title="Verd fosc"></div>
+          <div class="color-option color-verde-fluorescent" onclick="selectColorForm('verde-fluorescent', '#00ff00')" title="Verd fluorescent"></div>
+          <div class="color-option color-azul-claro" onclick="selectColorForm('azul-claro', '#bbdefb')" title="Blau clar"></div>
+          <div class="color-option color-azul-oscuro" onclick="selectColorForm('azul-oscuro', '#1565c0')" title="Blau fosc"></div>
+          <div class="color-option color-amarillo" onclick="selectColorForm('amarillo', '#fff9c4')" title="Groc clar"></div>
+          <div class="color-option color-groc" onclick="selectColorForm('groc', '#ffeb3b')" title="Groc"></div>
+          <div class="color-option color-marron" onclick="selectColorForm('marron', '#d7ccc8')" title="Marró"></div>
+          <div class="color-option color-gris" onclick="selectColorForm('gris', '#e0e0e0')" title="Gris"></div>
+          <div class="color-option color-negro" onclick="selectColorForm('negro', '#424242')" title="Negre"></div>
+          <div class="color-option color-rojo" onclick="selectColorForm('rojo', '#ffcdd2')" title="Vermell clar"></div>
+          <div class="color-option color-rojo-intenso" onclick="selectColorForm('rojo-intenso', '#ff0000')" title="Vermell intens"></div>
+          <div class="color-option color-rosa" onclick="selectColorForm('rosa', '#f8bbd0')" title="Rosa"></div>
+          <div class="color-option color-lila" onclick="selectColorForm('lila', '#e1bee7')" title="Lila"></div>
+        </div>
+        <input type="hidden" id="p-produit-color" value="#ffffff">
+        <p style="font-size:13.75px;color:#888;margin-top:5px">Fes clic a un color per seleccionar-lo</p>
+        <label>📅 Data producció</label><input type="date" id="p-data-prod">
+        <label>📅 Data emissió</label><input type="date" id="p-data-emissio">
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="saveProg()">💾 Guardar programa</button>
+        <button class="btn" onclick="resetProgForm()">Netejar</button>
+        <span class="msg" id="prog-msg"></span>
+        <span class="err" id="prog-err"></span>
+      </div>
+    </div>
+
+    <!-- Columna dreta: discos vinculats -->
+    <div id="prog-discos-panel" style="display:none;flex:1 1 320px;min-width:280px">
+      <div class="card" style="padding:0;overflow:hidden">
+        <div style="background:#f0f7ff;padding:12px 16px;border-bottom:1px solid #dde8f5;display:flex;align-items:center;justify-content:space-between">
+          <strong style="font-size:15px">💿 Discos vinculats</strong>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span id="prog-discos-count" style="font-size:13px;color:#666"></span>
+            <button class="btn btn-sm btn-purple" onclick="exportProgDiscos()" title="Exportar el contingut d'aquest programa a text">📄 Exportar</button>
+          </div>
+        </div>
+        <div id="prog-discos-list" style="max-height:520px;overflow-y:auto"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="dates" class="section">
+  <h2>📆 Calendari 2026 - 2030</h2>
+  <p style="font-size:15px;color:#666;margin-bottom:10px">✨ <strong>Consell:</strong> Clica a les capçaleres per ordenar | Clica qualsevol cel·la per editar</p>
+  <div class="spreadsheet-container">
+    <div class="spreadsheet-toolbar">
+      <button class="btn btn-sm btn-success" onclick="saveAllDatesChanges()">💾 Guardar tots els canvis</button>
+      <button class="sort-btn" onclick="sortDatesChronologically()">🔄 Reordenar dates</button>
+      <button class="sort-btn btn-danger-bg" onclick="fixDuplicateDates()">🔧 Netejar dates duplicades</button>
+      <div class="spreadsheet-stats" id="spreadsheet-dates-stats"></div>
+    </div>
+    <div class="date-selector">
+      <div class="year-nav">
+        <button class="btn btn-sm" onclick="previousYear()">◀ Any anterior</button>
+        <strong id="current-year-label" style="min-width:80px;text-align:center">2026</strong>
+        <button class="btn btn-sm" onclick="nextYear()">Any següent ▶</button>
+      </div>
+      <div class="month-selector" id="month-selector"></div>
+      <div class="prog-filter-dates">
+        <span>🔍 Filtrar per Nº Programa (GLOBAL):</span>
+        <input type="text" id="filter-date-prog" placeholder="Ex: 101, 45..." oninput="applyDateProgFilter()">
+        <button class="btn btn-sm" onclick="clearDateProgFilter()">✖ Netejar</button>
+        <span class="filter-info" id="date-filter-info"></span>
+      </div>
+    </div>
+    <div style="overflow-x:auto; max-height:65vh; overflow-y:auto">
+      <table class="spreadsheet-table" id="dates-spreadsheet-table">
+        <thead><th style="width:110px" onclick="sortDates('data')">📅 Data <span id="sort-date-data"></span></th><th onclick="sortDates('podcast1')">🎙️ Podcast 1 <span id="sort-date-podcast1"></span></th><th style="width:100px" onclick="sortDates('numProg1')">🔢 Nº Prog <span id="sort-date-numProg1"></span></th><th onclick="sortDates('podcast2')">🎙️ Podcast 2 <span id="sort-date-podcast2"></span></th><th style="width:100px" onclick="sortDates('numProg2')">🔢 Nº Prog <span id="sort-date-numProg2"></span></th><th onclick="sortDates('obs')">📝 Observacions <span id="sort-date-obs"></span></th><th style="width:100px">⚡ Accions</th></thead>
+        <tbody id="dates-spreadsheet-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="relacions" class="section"><h2>🔗 Relacions</h2><div id="relacions-content"></div></div>
+
+<div id="importacio-rapida" class="section">
+  <h2>📋 Import Ràpida</h2>
+  <div class="card">
+    <p style="margin-bottom:10px;font-size:14px;color:#555;">📌 <strong>Format:</strong> Podcast,Episodi,Temes,Autor,CD,Any,Link,Notes<br>
+    📌 Pots copiar directament des d'Excel, Google Sheets o qualsevol full de càlcul</p>
+    <textarea id="paste-data" rows="8" placeholder="Pega aquí les dades...&#10;Exemple:&#10;Món Clàssic,101,Mozart,Anna,CD01,2024,http://ex.mp3,Excel·lent programa&#10;Jazz&Co,45,Coltrane,Joan,JZ02,2025,,Requereix reedició"></textarea>
+    <div style="margin-top:15px; display:flex; gap:10px; flex-wrap:wrap;">
+      <select id="import-prog-select" style="width:auto; min-width:200px;"></select>
+      <button class="btn" onclick="previewPasteData()">🔍 Previsualitzar</button>
+      <button class="btn btn-primary" onclick="importPasteData()">📥 Importar</button>
+      <button class="btn" onclick="clearImportData()">🗑 Netejar</button>
+    </div>
+    <div id="paste-preview" class="preview-table" style="display: none;"></div>
+  </div>
+</div>
+
+<!-- ===== SECCIÓ GENERADOR (Jazz Expresso) ===== -->
+<div id="generador" class="section">
+  <div id="gen-app">
+    <h2 style="color:var(--brass);font-family:'Fraunces',serif;font-size:24px;margin:0 0 4px;">🎛️ Generador de post — Jazz Expresso</h2>
+    <p style="color:var(--dim);font-size:13.5px;margin:0 0 20px;">Omple els camps, prem "Generar codi" i enganxa el resultat a l'editor HTML de Blogger.</p>
+
+    <div class="gen-panel">
+      <h2>Capçalera</h2>
+      <div class="gen-row2">
+        <div><label>Programa</label><input type="text" id="gen-programa" value="Jazz Expresso"></div>
+        <div><label>Emissora</label><input type="text" id="gen-emissora" value="Sants 3 Ràdio"></div>
+      </div>
+      <label>Títol del post</label>
+      <input type="text" id="gen-titol" value="Quatre discos per a la nit">
+      <label>Introducció (pots fer servir &lt;em&gt;...&lt;/em&gt; per ressaltar una frase)</label>
+      <textarea id="gen-intro">Un trio sense piano a Londres, una guitarra que torna d'una gira, un tenor que passeja per Brian Wilson i Tom Waits, i un piano que grava a Barcelona. Quatre publicacions recents, &lt;em&gt;quatre maneres d'entendre el repertori.&lt;/em&gt;</textarea>
+    </div>
+
+    <div class="gen-panel">
+      <h2>Discos</h2>
+      <div id="gen-albums"></div>
+      <div class="gen-btns-row">
+        <button class="gen-btn ghost" onclick="gen_addAlbum()">+ Afegir disc</button>
+      </div>
+    </div>
+
+    <div class="gen-top-actions" style="flex-wrap:wrap;gap:8px;">
+      <button class="gen-btn" onclick="gen_generate()">Generar codi</button>
+      <button class="gen-btn ghost" onclick="gen_copyOutput()">Copiar codi</button>
+      <button class="gen-btn ghost" onclick="gen_exportarJSON()">💾 Desar estat (JSON)</button>
+      <button class="gen-btn ghost" onclick="document.getElementById('gen-import-file').click()">📂 Carregar estat (JSON)</button>
+      <input type="file" id="gen-import-file" accept=".json" style="display:none" onchange="gen_importarJSON(this.files[0])">
+      <button class="gen-btn danger" onclick="gen_netejarTot()">🧹 Netejar tot</button>
+      <span class="gen-copied" id="gen-copiedMsg">Copiat ✓</span>
+    </div>
+
+    <div class="gen-panel" style="margin-top:18px;">
+      <h2>Codi per enganxar a Blogger (mode HTML)</h2>
+      <textarea class="gen-output" id="gen-output" readonly placeholder="El codi apareixerà aquí després de prémer «Generar codi»…"></textarea>
+      <p class="gen-hint">Si has enganxat portades, el codi pot pesar bastant (les imatges queden incrustades directament). És normal.</p>
+    </div>
+  </div>
+</div>
+
+<div id="exportar" class="section">
+  <h2>💾 Backup</h2>
+
+  <!-- NOU: Fitxer persistent -->
+  <div class="card" style="border:2px solid #27ae60;background:#f0faf4">
+    <h3 style="margin:0 0 10px;color:#27ae60">📂 Fitxer de dades persistent <span style="font-size:12px;background:#27ae60;color:#fff;border-radius:10px;padding:2px 8px;margin-left:6px">RECOMANAT</span></h3>
+    <div id="file-status" style="margin-bottom:12px;font-size:14px">
+      <span style="color:#e67e22">⚠️ <strong>Cap fitxer actiu.</strong> Les dades es guarden al navegador (menys segur).<br>Crea o obre un fitxer per màxima seguretat.</span>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-success" onclick="createNewDataFile()">🆕 Crear fitxer nou</button>
+      <button class="btn" onclick="openDataFile()" style="background:#2980b9;color:#fff">📂 Obrir fitxer existent</button>
+      <button class="btn" id="btn-desconnectar-fitxer" onclick="desconnectarFitxer()" style="background:#e74c3c;color:#fff;display:none">✖ Desconnectar fitxer</button>
+    </div>
+    <p style="font-size:12px;color:#666;margin:10px 0 0">ℹ️ Un cop vinculat, <strong>cada canvi es desa automàticament al fitxer del teu disc</strong>. El fitxer es pot guardar on vulguis (escriptori, OneDrive, Google Drive...).</p>
+  </div>
+
+  <!-- Backup manual JSON -->
+  <div class="card">
+    <div style="background:#e8f5e9; padding:10px; border-radius:10px; margin-bottom:15px;">
+      <strong>🗄️ Emmagatzematge:</strong> Les dades es guarden a <strong>IndexedDB</strong> (sense límit pràctic). <strong>🤖 Backup automàtic:</strong> Cada 30 minuts es desa un fitxer JSON a descàrregues.
+    </div>
+    <button class="btn btn-primary" onclick="exportJSON()">📥 Exportar JSON manualment</button>
+    <button class="btn" onclick="showHistory()" style="background:#8e44ad;color:#fff;margin-left:8px">🕑 Historial de versions</button>
+  </div>
+  <div class="card"><div style="background:#fff3cd;padding:12.5px;border-radius:10px;margin-bottom:15px">⚠️ Sobrescriu totes les dades</div><input type="file" id="import-json-file" accept=".json"><button class="btn btn-warn" onclick="importJSON()">📂 Importar JSON</button></div>
+  <div class="card"><button class="btn" onclick="exportCSVDiscos()">CSV Discos</button><button class="btn" onclick="exportCSVProgrames()">CSV Programes</button><button class="btn" onclick="exportCSVDates()">CSV Dates</button></div>
+</div>
+
+<!-- Modal de confirmació -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-icon" id="modal-icon">⚠️</div>
+    <div class="modal-title" id="modal-title">Confirmar acció</div>
+    <div class="modal-msg" id="modal-msg"></div>
+    <div class="modal-actions">
+      <button class="btn" id="modal-cancel-btn" onclick="modalCancel()">Cancel·lar</button>
+      <button class="btn btn-danger" id="modal-confirm-btn" onclick="modalConfirm()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Undo toast -->
+<div class="undo-toast" id="undo-toast">
+  <span id="undo-msg">Acció desfeta</span>
+  <button onclick="doUndo()">↩ Desfer (Ctrl+Z)</button>
+</div>
+
+<!-- localStorage status -->
+<div class="ls-status" id="ls-status">
+  <div class="ls-alert" id="ls-alert">ℹ️ Missatge de sistema</div>
+  <div class="ls-bar-wrap">
+    <span id="ls-label">💾 0 KB</span>
+    <div class="ls-bar-bg"><div class="ls-bar-fill" id="ls-bar-fill"></div></div>
+  </div>
+</div>
+
+<div id="backupIndicator" class="backup-indicator">
+  <div class="spinner"></div>
+  <span>Guardant còpia de seguretat...</span>
+</div>
+<div id="backupTimer" class="backup-timer">
+  ⏱️ Proper backup: <span id="timerCount">30:00</span>
+</div>
+
+<script>
+// ===================== BASE DE DADES (IndexedDB) =====================
+let discos = [];
+let programes = [];
+let dates = [];
+let selectedDiscos = new Set();
+let selectedProgrames = new Set();
+let currentDiscoRows = [];
+let currentProgRows = [];
+let filteredDiscos = [];
+let filteredProgrames = [];
+let spreadsheetSelectedDiscos = new Set();
+let spreadsheetSelectedProgrames = new Set();
+let currentYear = 2026;
+let currentMonth = 0;
+let activeColorPopup = null;
+let globalDateProgFilter = '';
+
+let selectedCells = new Set();
+let startCell = null;
+
+let backupInterval = null;
+let secondsUntilBackup = 30 * 60;
+let isBackupRunning = false;
+
+// Variables per ordenació
+let sortColumn = 'podcast';
+let sortDirection = 'asc';
+
+// Variables per ordenació de dates
+let sortDateColumn = 'data';
+let sortDateDirection = 'asc';
+
+// Variables per ordenació de programes
+let sortProgColumn = '';
+let sortProgDirection = 'asc';
+
+// Variables per navegació de discos
+let discosOrdenats = [];
+let indexDiscActual = -1;
+let selectedProgId = null;
+let notesMode = 'editor';
+let discoFormColor = null;
+let progFormColor = null;
+
+const colorList = ['#c8e6c9', '#2e7d32', '#00ff00', '#bbdefb', '#1565c0', '#fff9c4', '#ffeb3b', '#d7ccc8', '#e0e0e0', '#424242', '#ffcdd2', '#ff0000', '#f8bbd0', '#e1bee7'];
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmt(d) { if (!d) return ''; try { const [y,m,day]=d.split('-'); return `${day}/${m}/${y}`; } catch(e) { return d; } }
+function ts() { return new Date().toISOString().slice(0,10); }
+
+// ===================== ORDENACIÓ =====================
+function sortDiscos(column) {
+  if (sortColumn === column) {
+    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortColumn = column;
+    sortDirection = 'asc';
+  }
+  
+  // Actualitzar indicadors visuals
+  const columns = ['podcast', 'episodi', 'temes', 'autor', 'cd', 'any', 'link', 'notes'];
+  columns.forEach(col => {
+    const span = document.getElementById(`sort-${col}`);
+    if (span) {
+      if (col === column) {
+        span.textContent = sortDirection === 'asc' ? ' ↑' : ' ↓';
+      } else {
+        span.textContent = '';
+      }
+    }
+  });
+  
+  applyDiscoFilters();
+}
+
+function sortProgrames(column) {
+  if (sortProgColumn === column) {
+    sortProgDirection = sortProgDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortProgColumn = column;
+    sortProgDirection = 'asc';
+  }
+  const progColumns = ['num', 'episodi', 'programa', 'produit', 'dataProd', 'dataEmissio'];
+  progColumns.forEach(col => {
+    const span = document.getElementById(`sort-prog-${col}`);
+    if (span) span.textContent = col === column ? (sortProgDirection === 'asc' ? ' ↑' : ' ↓') : '';
+  });
+  renderProgramesSpreadsheet();
+}
+
+function sortDates(column) {
+  if (sortDateColumn === column) {
+    sortDateDirection = sortDateDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortDateColumn = column;
+    sortDateDirection = 'asc';
+  }
+  const dateColumns = ['data', 'podcast1', 'numProg1', 'podcast2', 'numProg2', 'obs'];
+  dateColumns.forEach(col => {
+    const span = document.getElementById(`sort-date-${col}`);
+    if (span) span.textContent = col === column ? (sortDateDirection === 'asc' ? ' ↑' : ' ↓') : '';
+  });
+  renderDatesSpreadsheet();
+}
+
+function getSortedData(data, column, direction) {
+  const sorted = [...data];
+  sorted.sort((a, b) => {
+    let aVal = a[column] || '';
+    let bVal = b[column] || '';
+    
+    if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+    if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+    
+    if (column === 'any') {
+      aVal = parseInt(aVal) || 0;
+      bVal = parseInt(bVal) || 0;
+    }
+    
+    if (aVal < bVal) return direction === 'asc' ? -1 : 1;
+    if (aVal > bVal) return direction === 'asc' ? 1 : -1;
+    return 0;
+  });
+  return sorted;
+}
+
+function clearDiscoSort() {
+  sortColumn = 'podcast';
+  sortDirection = 'asc';
+  const columns = ['podcast', 'episodi', 'temes', 'autor', 'cd', 'any', 'link', 'notes'];
+  columns.forEach(col => {
+    const span = document.getElementById(`sort-${col}`);
+    if (span) span.textContent = '';
+  });
+  applyDiscoFilters();
+}
+
+function showToast(msg) {
+  let toast = document.getElementById('simple-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'simple-toast';
+    toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 22px;border-radius:20px;font-size:15px;z-index:9999;transition:opacity 0.4s;pointer-events:none';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => { toast.style.opacity = '0'; }, 3000);
+}
+
+// ===================== BACKUP AUTOMÀTIC =====================
+function startAutoBackup() {
+  if (backupInterval) clearInterval(backupInterval);
+  backupInterval = setInterval(() => {
+    secondsUntilBackup--;
+    updateTimerDisplay();
+    if (secondsUntilBackup <= 0) {
+      performAutoBackup();
+      secondsUntilBackup = 30 * 60;
+      updateTimerDisplay();
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const minutes = Math.floor(secondsUntilBackup / 60);
+  const seconds = secondsUntilBackup % 60;
+  const timerSpan = document.getElementById('timerCount');
+  if (timerSpan) {
+    timerSpan.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  }
+}
+
+async function performAutoBackup() {
+  if (isBackupRunning) return;
+  isBackupRunning = true;
+  const indicator = document.getElementById('backupIndicator');
+  if (indicator) indicator.classList.add('show');
+  try {
+    const data = { discos, programes, dates, backupDate: new Date().toISOString() };
+    const json = JSON.stringify(data, null, 2);
+    const filename = `podcast_backup_auto_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
+
+    // Intent 1: File System Access API (Chrome/Edge) — no bloquejada
+    if (window.showSaveFilePicker) {
+      try {
+        const fh = await window.showSaveFilePicker({
+          suggestedName: filename,
+          types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
+        });
+        const writable = await fh.createWritable();
+        await writable.write(json);
+        await writable.close();
+        showToast('✅ Backup automàtic desat');
+        isBackupRunning = false;
+        if (indicator) indicator.classList.remove('show');
+        return;
+      } catch(e) {
+        // L'usuari ha cancel·lat el diàleg → passem a intent 2
+      }
+    }
+
+    // Intent 2: descàrrega clàssica via blob URL
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    showToast('✅ Backup automàtic exportat');
+  } catch(e) {
+    console.error('Error en backup automàtic:', e);
+    showToast('⚠️ Error en backup automàtic');
+  }
+  setTimeout(() => {
+    if (indicator) indicator.classList.remove('show');
+    isBackupRunning = false;
+  }, 1500);
+}
+
+// ===================== FUNCIONS PRINCIPALS =====================
+function formatDateToDMY(date) {
+  let d = date.getDate();
+  let m = date.getMonth() + 1;
+  let y = date.getFullYear();
+  return `${d.toString().padStart(2,'0')}-${m.toString().padStart(2,'0')}-${y}`;
+}
+
+function parseDMYToDate(dmy) {
+  const parts = dmy.split('-');
+  return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+}
+
+function generateDates() {
+  const startDate = new Date(2026, 0, 1);
+  const endDate = new Date(2030, 11, 31);
+  const newDates = [];
+  for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+    newDates.push({
+      id: uid(),
+      data: formatDateToDMY(new Date(d)),
+      podcast1: '',
+      numProg1: '',
+      podcast2: '',
+      numProg2: '',
+      obs: '',
+      colorPodcast1: null,
+      colorNumProg1: null,
+      colorPodcast2: null,
+      colorNumProg2: null,
+      colorObs: null
+    });
+  }
+  return newDates;
+}
+
+function closeColorSidebar() {
+  if (!activeColorPopup) return;
+  const { overlay, panel } = activeColorPopup;
+  overlay.classList.remove('open');
+  panel.classList.remove('open');
+  document.removeEventListener('keydown', escCloseColorSidebar);
+  setTimeout(() => { overlay.remove(); panel.remove(); }, 250);
+  activeColorPopup = null;
+}
+
+function escCloseColorSidebar(e) {
+  if (e.key === 'Escape') closeColorSidebar();
+}
+
+function showColorPicker(callback, currentColor) {
+  if (activeColorPopup) closeColorSidebar();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'color-sidebar-overlay';
+
+  const panel = document.createElement('div');
+  panel.className = 'color-sidebar';
+  panel.innerHTML = `
+    <div class="color-sidebar-header">
+      <span>🎨 Tria un color</span>
+      <button type="button" class="color-sidebar-close" title="Tancar">✕</button>
+    </div>
+    <div class="color-sidebar-section-title">Colors predefinits</div>
+    <div class="color-popup-palette color-sidebar-palette">
+      ${colorList.map(color => `<div class="color-popup-option" style="background-color: ${color}" data-color="${color}" title="${color}"></div>`).join('')}
+    </div>
+    <div class="color-sidebar-section-title">Color personalitzat</div>
+    <div class="color-sidebar-custom">
+      <div class="color-sidebar-custom-row">
+        <input type="color" class="color-sidebar-swatch-input" value="${currentColor && /^#/.test(currentColor) ? currentColor : '#ffffff'}">
+        <input type="text" class="color-sidebar-hex" maxlength="7" value="${currentColor && /^#/.test(currentColor) ? currentColor : '#ffffff'}">
+      </div>
+      <button type="button" class="btn btn-primary color-sidebar-apply">Aplicar color personalitzat</button>
+    </div>
+    <button type="button" class="btn color-sidebar-remove">🚫 Treure color (deixar en blanc)</button>
+  `;
+
+  document.body.appendChild(overlay);
+  document.body.appendChild(panel);
+  activeColorPopup = { overlay, panel };
+
+  requestAnimationFrame(() => {
+    overlay.classList.add('open');
+    panel.classList.add('open');
+  });
+
+  const colorPicker = panel.querySelector('.color-sidebar-swatch-input');
+  const hexInput = panel.querySelector('.color-sidebar-hex');
+
+  panel.querySelectorAll('.color-popup-option').forEach(opt => {
+    if (opt.dataset.color === currentColor) opt.classList.add('selected');
+    opt.addEventListener('click', () => {
+      callback(opt.dataset.color);
+      closeColorSidebar();
+    });
+  });
+
+  colorPicker.addEventListener('input', () => { hexInput.value = colorPicker.value; });
+  hexInput.addEventListener('change', () => {
+    if (/^#[0-9a-fA-F]{6}$/.test(hexInput.value)) colorPicker.value = hexInput.value;
+    else hexInput.value = colorPicker.value;
+  });
+
+  panel.querySelector('.color-sidebar-apply').addEventListener('click', () => {
+    callback(colorPicker.value);
+    closeColorSidebar();
+  });
+  panel.querySelector('.color-sidebar-remove').addEventListener('click', () => {
+    callback('#ffffff');
+    closeColorSidebar();
+  });
+  panel.querySelector('.color-sidebar-close').addEventListener('click', closeColorSidebar);
+  overlay.addEventListener('click', closeColorSidebar);
+  document.addEventListener('keydown', escCloseColorSidebar);
+}
+
+function handleCellSelection(event, rowId, colIndex, element) {
+  event.stopPropagation();
+  if (event.ctrlKey) {
+    const cellKey = `${rowId}|${colIndex}`;
+    if (selectedCells.has(cellKey)) {
+      selectedCells.delete(cellKey);
+      element.classList.remove('selected-cell');
+    } else {
+      selectedCells.add(cellKey);
+      element.classList.add('selected-cell');
+    }
+  } else {
+    clearCellSelection();
+    const cellKey = `${rowId}|${colIndex}`;
+    selectedCells.add(cellKey);
+    element.classList.add('selected-cell');
+    startCell = { rowId, colIndex };
+  }
+}
+
+function clearCellSelection() {
+  selectedCells.forEach(cellKey => {
+    const element = document.querySelector(`[data-cell-key="${cellKey}"]`);
+    if (element) element.classList.remove('selected-cell');
+  });
+  selectedCells.clear();
+  startCell = null;
+}
+
+function copySelectedCells() {
+  if (selectedCells.size === 0) return;
+  const cellsByRow = new Map();
+  selectedCells.forEach(cellKey => {
+    const [rowId, colIndex] = cellKey.split('|');
+    if (!cellsByRow.has(rowId)) cellsByRow.set(rowId, []);
+    cellsByRow.get(rowId).push(parseInt(colIndex));
+  });
+  const rows = Array.from(cellsByRow.keys());
+  const textToCopy = [];
+  for (const rowId of rows) {
+    const cols = cellsByRow.get(rowId).sort((a,b) => a-b);
+    const rowValues = [];
+    for (const col of cols) {
+      const element = document.querySelector(`[data-cell-key="${rowId}|${col}"]`);
+      if (element) {
+        const input = element.querySelector('input, select');
+        rowValues.push(input ? input.value : element.innerText);
+      }
+    }
+    textToCopy.push(rowValues.join('\t'));
+  }
+  if (textToCopy.length > 0) {
+    navigator.clipboard.writeText(textToCopy.join('\n'));
+  }
+}
+
+function exportSelectedNotes() {
+  const selectedIds = Array.from(selectedDiscos);
+  if (selectedIds.length === 0) {
+    alert('Si us plau, selecciona almenys un disc per exportar les notes.');
+    return;
+  }
+  const selectedDiscoData = discos.filter(d => selectedIds.includes(d.id));
+  const outputText = selectedDiscoData.map(d => d.notes || '').join('\n');
+  const blob = new Blob([outputText], { type: 'text/plain;charset=utf-8' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  link.href = url;
+  link.download = `notes_discos_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.txt`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+  showToast(`✅ S'han exportat les notes de ${selectedDiscoData.length} discos.`);
+}
+
+function exportSelectedNotesFromSpreadsheet() {
+  const selectedIds = Array.from(spreadsheetSelectedDiscos);
+  if (selectedIds.length === 0) {
+    alert('Si us plau, selecciona almenys un disc per exportar les notes (marca les caselles de la primera columna).');
+    return;
+  }
+  const selectedDiscoData = discos.filter(d => selectedIds.includes(d.id));
+  const outputText = selectedDiscoData.map(d => d.notes || '').join('\n');
+  const blob = new Blob([outputText], { type: 'text/plain;charset=utf-8' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  link.href = url;
+  link.download = `notes_discos_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.txt`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+  showToast(`✅ S'han exportat les notes de ${selectedDiscoData.length} discos.`);
+}
+
+function clearSelectedDiscos() {
+  selectedDiscos.clear();
+  renderDiscosTable();
+  updateDiscosBulkBar();
+}
+
+function updateDiscosBulkBar() {
+  const n = selectedDiscos.size;
+  const bar = document.getElementById('discos-bulk-bar');
+  const count = document.getElementById('discos-bulk-count');
+  if (bar && count) {
+    if (n > 0) {
+      bar.style.display = 'flex';
+      count.textContent = n + ' seleccionat' + (n !== 1 ? 's' : '');
+    } else {
+      bar.style.display = 'none';
+    }
+  }
+}
+
+function paintFullDiscoLine(discoId, color) {
+  const idx = discos.findIndex(d => d.id === discoId);
+  if (idx !== -1) {
+    discos[idx].lineColor = color;
+    saveData();
+    renderDiscosSpreadsheet();
+    if (document.getElementById('disco-id') && document.getElementById('disco-id').value === discoId) {
+      discoFormColor = color;
+      actualitzarSwatchColorDisc();
+    }
+  }
+}
+
+function obrirSelectorColorDisc(event) {
+  showColorPicker((color) => {
+    discoFormColor = color;
+    actualitzarSwatchColorDisc();
+  });
+}
+
+function actualitzarSwatchColorDisc() {
+  const swatch = document.getElementById('disco-color-swatch');
+  if (swatch) swatch.style.backgroundColor = discoFormColor || 'transparent';
+}
+
+function obrirSelectorColorProg(event) {
+  showColorPicker((color) => {
+    progFormColor = color;
+    actualitzarSwatchColorProg();
+  });
+}
+
+function actualitzarSwatchColorProg() {
+  const swatch = document.getElementById('prog-color-swatch');
+  if (swatch) swatch.style.backgroundColor = progFormColor || 'transparent';
+}
+
+function updateDiscoCellColor(discoId, field, color) {
+  const idx = discos.findIndex(d => d.id === discoId);
+  if (idx !== -1) {
+    if (!discos[idx].cellColors) discos[idx].cellColors = {};
+    discos[idx].cellColors[field] = color;
+    saveData();
+    renderDiscosSpreadsheet();
+  }
+}
+
+function getDiscoCellColor(disco, field) {
+  if (disco.lineColor) return disco.lineColor;
+  if (disco.cellColors && disco.cellColors[field]) return disco.cellColors[field];
+  return '#ffffff';
+}
+
+function paintFullProgLine(progId, color) {
+  const idx = programes.findIndex(p => p.id === progId);
+  if (idx !== -1) {
+    programes[idx].lineColor = color;
+    saveData();
+    renderProgramesSpreadsheet();
+    if (document.getElementById('prog-id') && document.getElementById('prog-id').value === progId) {
+      progFormColor = color;
+      actualitzarSwatchColorProg();
+    }
+  }
+}
+
+function updateProgCellColor(progId, field, color) {
+  const idx = programes.findIndex(p => p.id === progId);
+  if (idx !== -1) {
+    if (!programes[idx].cellColors) programes[idx].cellColors = {};
+    programes[idx].cellColors[field] = color;
+    saveData();
+    renderProgramesSpreadsheet();
+  }
+}
+
+function getProgCellColor(prog, field) {
+  if (prog.lineColor) return prog.lineColor;
+  if (prog.cellColors && prog.cellColors[field]) return prog.cellColors[field];
+  if (field === 'produit' && prog.colorProduit) return prog.colorProduit;
+  return '#ffffff';
+}
+
+function fixDuplicateDates() {
+  const uniqueDates = new Map();
+  for (const date of dates) {
+    if (!uniqueDates.has(date.data)) {
+      uniqueDates.set(date.data, date);
+    }
+  }
+  dates = Array.from(uniqueDates.values());
+  sortDatesChronologically();
+  saveData();
+  renderDatesSpreadsheet();
+  alert(`✅ Netejat! Queden ${dates.length} dates úniques (hauria de ser 1826)`);
+}
+
+function sortDatesChronologically() {
+  dates.sort((a, b) => {
+    const dateA = parseDMYToDate(a.data);
+    const dateB = parseDMYToDate(b.data);
+    return dateA - dateB;
+  });
+  saveData();
+  renderDatesSpreadsheet();
+}
+
+function applyDateProgFilter() {
+  globalDateProgFilter = document.getElementById('filter-date-prog').value.trim().toLowerCase();
+  const infoSpan = document.getElementById('date-filter-info');
+  if (globalDateProgFilter) {
+    const count = dates.filter(d => 
+      (d.numProg1 || '').toLowerCase().includes(globalDateProgFilter) || 
+      (d.numProg2 || '').toLowerCase().includes(globalDateProgFilter)
+    ).length;
+    infoSpan.textContent = `✅ ${count} resultats trobats (cerca global)`;
+  } else {
+    infoSpan.textContent = '';
+  }
+  renderDatesSpreadsheet();
+}
+
+function clearDateProgFilter() {
+  document.getElementById('filter-date-prog').value = '';
+  globalDateProgFilter = '';
+  document.getElementById('date-filter-info').textContent = '';
+  renderDatesSpreadsheet();
+}
+
+async function showHistory() {
+  await initDB();
+  const history = (await idbGet('history')) || [];
+  if (!history.length) { alert('No hi ha versions anteriors desades.'); return; }
+
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10000;display:flex;align-items:center;justify-content:center';
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:12px;padding:28px;max-width:560px;width:94%;max-height:80vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.3)">
+      <h3 style="margin:0 0 16px">🕑 Historial de versions (últimes ${history.length})</h3>
+      <p style="color:#888;font-size:13px;margin-bottom:16px">Clica "Restaurar" per tornar a qualsevol versió anterior. Les dades actuals quedaran guardades com a versió 0.</p>
+      <table style="width:100%;border-collapse:collapse;font-size:14px">
+        <thead><tr style="background:#f0f0f0"><th style="padding:8px;text-align:left">Data i hora</th><th>Discos</th><th>Programes</th><th></th></tr></thead>
+        <tbody>
+          ${history.map((s, i) => {
+            const d = new Date(s.ts);
+            const label = d.toLocaleDateString('ca-ES', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+            return `<tr style="border-bottom:1px solid #eee">
+              <td style="padding:8px">${i === 0 ? '🟢 ' : ''}${label}</td>
+              <td style="text-align:center">${(s.discos||[]).length}</td>
+              <td style="text-align:center">${(s.programes||[]).length}</td>
+              <td style="text-align:right;padding:4px">
+                ${i === 0 ? '<span style="color:#aaa;font-size:12px">(actual)</span>' : `<button onclick="restoreFromHistory(${i})" style="background:#e74c3c;color:#fff;border:none;border-radius:6px;padding:4px 12px;cursor:pointer">↩ Restaurar</button>`}
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+      <div style="text-align:right;margin-top:18px">
+        <button onclick="this.closest('[style*=fixed]').remove()" style="background:#666;color:#fff;border:none;border-radius:8px;padding:8px 20px;cursor:pointer">Tancar</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+async function restoreFromHistory(index) {
+  if (!confirm(`Vols restaurar la versió ${index}? Les dades actuals es guardaran primer com a versió nova.`)) return;
+  await initDB();
+  const history = (await idbGet('history')) || [];
+  const snap = history[index];
+  if (!snap) { alert('Versió no trobada.'); return; }
+  // Guardar estat actual abans de restaurar
+  await saveData();
+  discos    = snap.discos    || [];
+  programes = snap.programes || [];
+  dates     = snap.dates     || [];
+  await saveData();
+  document.querySelector('[style*=fixed][style*=10000]')?.remove();
+  renderDashboard(); renderDiscosTable(); renderProgramesTable();
+  renderDiscosSpreadsheet(); renderProgramesSpreadsheet();
+  renderDatesSpreadsheet();
+  showToast(`✅ Restaurada versió del ${new Date(snap.ts).toLocaleString('ca-ES')}`);
+}
+
+// ── IndexedDB setup ──────────────────────────────────────────────────────────
+const DB_NAME    = 'PodcastAppDB';
+const DB_VERSION = 1;
+const STORE_NAME = 'appData';
+const DATA_KEY   = 'main';
+let   db         = null;  // s'omple a initDB()
+
+function initDB() {
+  return new Promise((resolve, reject) => {
+    if (db) { resolve(db); return; }
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains(STORE_NAME)) {
+        d.createObjectStore(STORE_NAME);
+      }
+    };
+    req.onsuccess = e => { db = e.target.result; resolve(db); };
+    req.onerror   = e => reject(e.target.error);
+  });
+}
+
+function idbGet(key) {
+  return new Promise((resolve, reject) => {
+    const tx  = db.transaction(STORE_NAME, 'readonly');
+    const req = tx.objectStore(STORE_NAME).get(key);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror   = e => reject(e.target.error);
+  });
+}
+
+function idbPut(key, value) {
+  return new Promise((resolve, reject) => {
+    const tx  = db.transaction(STORE_NAME, 'readwrite');
+    const req = tx.objectStore(STORE_NAME).put(value, key);
+    req.onsuccess = () => resolve();
+    req.onerror   = e => reject(e.target.error);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SISTEMA DE FITXER PERSISTENT (File System Access API)
+// Les dades es guarden directament a un .json al disc de l'usuari
+// ═══════════════════════════════════════════════════════════════
+let fileHandle = null;  // FileSystemFileHandle actiu
+const FILE_HANDLE_KEY = 'podcast_file_handle';
+
+// Desa el handle a IndexedDB per recuperar-lo a la propera sessió
+async function persistFileHandle(handle) {
+  try {
+    await initDB();
+    await idbPut(FILE_HANDLE_KEY, handle);
+  } catch(e) { console.warn('No s\'ha pogut persistir el handle:', e); }
+}
+
+async function getPersistedFileHandle() {
+  try {
+    await initDB();
+    const handle = await idbGet(FILE_HANDLE_KEY);
+    if (!handle) return null;
+    // Verificar que encara tenim permís
+    const perm = await handle.queryPermission({ mode: 'readwrite' });
+    if (perm === 'granted') return handle;
+    // Demanar permís si cal (requereix gest de l'usuari, ho farem a loadData)
+    return handle;
+  } catch(e) { return null; }
+}
+
+async function requestFilePermission(handle) {
+  try {
+    const perm = await handle.queryPermission({ mode: 'readwrite' });
+    if (perm === 'granted') return true;
+    const result = await handle.requestPermission({ mode: 'readwrite' });
+    return result === 'granted';
+  } catch(e) { return false; }
+}
+
+// Desa les dades al fitxer actiu (silenciós, sense diàleg)
+async function saveToFile() {
+  if (!fileHandle) return false;
+  try {
+    const data = { discos, programes, dates, savedAt: new Date().toISOString() };
+    const json = JSON.stringify(data, null, 2);
+    const writable = await fileHandle.createWritable();
+    await writable.write(json);
+    await writable.close();
+    updateFileStatus(fileHandle.name, true);
+    return true;
+  } catch(e) {
+    console.error('Error escrivint al fitxer:', e);
+    updateFileStatus(null, false);
+    return false;
+  }
+}
+
+// Llegeix les dades del fitxer actiu
+async function readFromFile(handle) {
+  try {
+    const file = await handle.getFile();
+    const text = await file.text();
+    return JSON.parse(text);
+  } catch(e) {
+    console.error('Error llegint el fitxer:', e);
+    return null;
+  }
+}
+
+// Crear fitxer nou
+async function createNewDataFile() {
+  if (!window.showSaveFilePicker) {
+    alert('El teu navegador no suporta aquesta funció. Usa Chrome, Edge o Comet.'); return;
+  }
+  try {
+    const handle = await window.showSaveFilePicker({
+      suggestedName: 'podcast_dades.json',
+      types: [{ description: 'Fitxer de dades Podcast', accept: { 'application/json': ['.json'] } }]
+    });
+    fileHandle = handle;
+    await persistFileHandle(handle);
+    await saveToFile();
+    updateFileStatus(handle.name, true);
+    showToast(`✅ Fitxer creat: ${handle.name}`);
+    updateFileUI();
+  } catch(e) {
+    if (e.name !== 'AbortError') console.error(e);
+  }
+}
+
+// Obrir fitxer existent
+async function openDataFile() {
+  if (!window.showOpenFilePicker) {
+    // Fallback: input file clàssic
+    document.getElementById('import-json-file').click(); return;
+  }
+  try {
+    const [handle] = await window.showOpenFilePicker({
+      types: [{ description: 'Fitxer de dades Podcast', accept: { 'application/json': ['.json'] } }]
+    });
+    const data = await readFromFile(handle);
+    if (!data || (!data.discos && !data.programes)) {
+      alert('El fitxer no té el format correcte.'); return;
+    }
+    fileHandle = handle;
+    await persistFileHandle(handle);
+    processLoadedData(data);
+    await saveData(); // també a IDB com a còpia de seguretat
+    updateFileStatus(handle.name, true);
+    updateFileUI();
+    renderAll();
+    showToast(`✅ Fitxer obert: ${handle.name}`);
+  } catch(e) {
+    if (e.name !== 'AbortError') console.error(e);
+  }
+}
+
+function updateFileStatus(name, ok) {
+  const el = document.getElementById('file-status');
+  if (!el) return;
+  if (name && ok) {
+    el.innerHTML = `<span style="color:#27ae60">✅ Fitxer actiu: <strong>${name}</strong> — tots els canvis es desen automàticament</span>`;
+  } else if (!name) {
+    el.innerHTML = `<span style="color:#e67e22">⚠️ <strong>Cap fitxer actiu.</strong> Les dades es guarden al navegador (menys segur). <br>Crea o obre un fitxer per màxima seguretat.</span>`;
+  } else {
+    el.innerHTML = `<span style="color:#e74c3c">❌ Error escrivint al fitxer. Torna a obrir-lo.</span>`;
+  }
+}
+
+function updateFileUI() {
+  const btn = document.getElementById('btn-desconnectar-fitxer');
+  if (btn) btn.style.display = fileHandle ? 'inline-block' : 'none';
+}
+
+function desconnectarFitxer() {
+  fileHandle = null;
+  idbPut(FILE_HANDLE_KEY, null).catch(() => {});
+  updateFileStatus(null, false);
+  updateFileUI();
+  showToast('Fitxer desconnectat. Les dades segueixen al navegador.');
+}
+
+function renderAll() {
+  renderDashboard(); renderProgFilterOptions();
+  renderDiscosTable(); renderProgramesTable();
+  renderDiscosSpreadsheet(); renderProgramesSpreadsheet();
+  renderDatesSpreadsheet(); updateImportProgSelect();
+}
+
+// ── Migració des de localStorage (s'executa una sola vegada) ─────────────────
+async function migrateFromLocalStorage() {
+  try {
+    const lsData = localStorage.getItem('podcast_app_data');
+    if (!lsData) return false;
+    const data = JSON.parse(lsData);
+    if (!data || (!data.discos && !data.programes)) return false;
+    await idbPut(DATA_KEY, data);
+    // Netejar localStorage un cop migrat
+    localStorage.removeItem('podcast_app_data');
+    localStorage.removeItem('podcast_app_data_emergency');
+    console.info('✅ Migració localStorage → IndexedDB completada.');
+    showLsAlert('✅ Dades migrades a IndexedDB (sense límit d\'espai)!');
+    return true;
+  } catch(e) {
+    console.warn('Migració localStorage fallida:', e);
+    return false;
+  }
+}
+
+// ── processData: normalitza després de carregar ───────────────────────────────
+function processLoadedData(data) {
+  if (data) {
+    discos    = Array.isArray(data.discos)    ? data.discos    : [];
+    programes = Array.isArray(data.programes) ? data.programes : [];
+    dates     = Array.isArray(data.dates)     ? data.dates     : [];
+  }
+  if (!dates || dates.length === 0) {
+    dates = generateDates();
+  } else {
+    const uniqueDates = new Map();
+    for (const date of dates) {
+      if (!uniqueDates.has(date.data)) uniqueDates.set(date.data, date);
+    }
+    dates = Array.from(uniqueDates.values());
+    dates.sort((a, b) => parseDMYToDate(a.data) - parseDMYToDate(b.data));
+  }
+  programes.forEach(p => { if (!p.colorProduit) p.colorProduit = '#ffffff'; });
+}
+
+// ── loadData: async, crida tota la inicialització de renders ─────────────────
+async function loadData() {
+  try {
+    await initDB();
+
+    // 0. Intentar recuperar el fitxer del disc (màxima prioritat)
+    const savedHandle = await getPersistedFileHandle();
+    if (savedHandle) {
+      const granted = await requestFilePermission(savedHandle);
+      if (granted) {
+        const fileData = await readFromFile(savedHandle);
+        if (fileData && (fileData.discos || fileData.programes)) {
+          fileHandle = savedHandle;
+          processLoadedData(fileData);
+          await idbPut(DATA_KEY, fileData); // sincronitzar IDB
+          updateFileStatus(savedHandle.name, true);
+          updateFileUI();
+          // Renderitzar i sortir
+          _renderAndStart();
+          return;
+        }
+      } else {
+        // Tenim el handle però cal que l'usuari aprovi el permís manualment
+        window._pendingHandle = savedHandle;
+        // Mostrar banner taronja prominent a la part superior
+        const banner = document.getElementById('reconnect-banner');
+        const fname  = document.getElementById('reconnect-filename');
+        if (banner) { fname.textContent = savedHandle.name; banner.style.display = 'block'; }
+        // També actualitzar el card de Backup
+        const el = document.getElementById('file-status');
+        if (el) el.innerHTML = `<span style="color:#e67e22">📂 Fitxer vinculat: <strong>${savedHandle.name}</strong> — pendent de reconnectar</span>`;
+      }
+    }
+
+    // 1. Intentar migrar des de localStorage si existeix
+    const migrated = await migrateFromLocalStorage();
+    if (!migrated) {
+      let data = await idbGet(DATA_KEY);
+      if (!data) {
+        data = await idbGet(DATA_KEY + '_emergency');
+        if (data) console.warn('Recuperat des de backup d\'emergència IDB.');
+      }
+      processLoadedData(data);
+    } else {
+      const data = await idbGet(DATA_KEY);
+      processLoadedData(data);
+    }
+    await saveData();
+    if (!fileHandle) updateFileStatus(null, false);
+  } catch(e) {
+    console.error('Error crític loadData:', e);
+    showLsAlert('Error en carregar dades. Comprova el backup!');
+    try {
+      const raw = localStorage.getItem('podcast_app_data');
+      if (raw) processLoadedData(JSON.parse(raw));
+    } catch(_) {}
+  }
+  _renderAndStart();
+}
+
+async function reattachFile() {
+  const handle = window._pendingHandle;
+  if (!handle) return;
+  const granted = await requestFilePermission(handle);
+  if (granted) {
+    const fileData = await readFromFile(handle);
+    if (fileData) {
+      fileHandle = handle;
+      processLoadedData(fileData);
+      await saveData();
+      updateFileStatus(fileHandle.name, true);
+      updateFileUI();
+      renderAll();
+      // Amagar banner
+      const banner = document.getElementById('reconnect-banner');
+      if (banner) banner.style.display = 'none';
+      window._pendingHandle = null;
+      showToast(`✅ Fitxer reconnectat: ${fileHandle.name}`);
+    }
+  } else {
+    showToast('⚠️ No s\'ha pogut obtenir permís al fitxer');
+  }
+}
+
+function _renderAndStart() {
+  renderDashboard();
+  renderProgFilterOptions();
+  renderDiscosTable();
+  renderProgramesTable();
+  renderDiscosSpreadsheet();
+  renderProgramesSpreadsheet();
+  initMonthSelector();
+  renderDatesSpreadsheet();
+  updateImportProgSelect();
+  startAutoBackup();
+  updateLsStatus();
+  updateFileUI();
+  // Inicialitzar el generador (sense discos de seed)
+  gen_addAlbum();
+  // Restaurar estat guardat
+  gen_restaurarEstat();
+  // Enllaçar events per guardar automàticament
+  document.querySelector('#gen-app').addEventListener('input', gen_guardarEstat);
+  document.querySelector('#gen-app').addEventListener('change', gen_guardarEstat);
+}
+
+// ── saveData: async però fire-and-forget per no bloquejar la UI ───────────────
+async function saveData() {
+  try {
+    await initDB();
+    const data = { discos, programes, dates };
+    // Guardar backup d'emergència (còpia de l'estat anterior)
+    const prev = await idbGet(DATA_KEY);
+    if (prev) await idbPut(DATA_KEY + '_emergency', prev);
+    await idbPut(DATA_KEY, data);
+
+    // ── Historial de versions (últimes 10) ──────────────────────────────────
+    try {
+      let history = (await idbGet('history')) || [];
+      const snap = { ts: new Date().toISOString(), discos: JSON.parse(JSON.stringify(discos)), programes: JSON.parse(JSON.stringify(programes)), dates: JSON.parse(JSON.stringify(dates)) };
+      history.unshift(snap);
+      if (history.length > 10) history = history.slice(0, 10);
+      await idbPut('history', history);
+    } catch(he) { console.warn('Error guardant historial:', he); }
+
+    // ── Desar també al fitxer del disc si n'hi ha un d'actiu ────────────────
+    if (fileHandle) await saveToFile();
+
+    updateLsStatus();
+  } catch(e) {
+    console.error('Error saveData IDB:', e);
+    showLsAlert('Error en guardar dades a IndexedDB!');
+    // Fallback a localStorage si IDB falla
+    try {
+      localStorage.setItem('podcast_app_data', JSON.stringify({ discos, programes, dates }));
+    } catch(e2) {
+      showLsAlert('⚠️ No s\'han pogut guardar les dades!');
+    }
+  }
+}
+
+// ── Indicador d'ús (ara mostra mida real de les dades en memòria) ─────────────
+// ===================== MILLORA 2: INDICADOR emmagatzematge =====================
+function updateLsStatus() {
+  try {
+    const json = JSON.stringify({ discos, programes, dates });
+    const bytes = new Blob([json]).size;
+    const kb = Math.round(bytes / 1024);
+    // IndexedDB no té límit pràctic — mostrem mida però sense % alarma
+    const fill  = document.getElementById('ls-bar-fill');
+    const label = document.getElementById('ls-label');
+    // Escala visual: 0–20 MB
+    const pct = Math.min(100, Math.round(bytes / (20 * 1024 * 1024) * 100));
+    if (fill) {
+      fill.style.width = Math.max(2, pct) + '%';
+      fill.className = 'ls-bar-fill'; // sempre verd (IDB no té límit real)
+    }
+    if (label) label.textContent = `🗄 IndexedDB · ${kb < 1024 ? kb + ' KB' : (kb/1024).toFixed(1) + ' MB'}`;
+  } catch(e) {}
+}
+
+function showLsAlert(msg) {
+  const el = document.getElementById('ls-alert');
+  if (el) { el.textContent = msg; el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 7000); }
+}
+
+// ===================== MILLORA 1: MODAL DE CONFIRMACIÓ =====================
+let modalResolve = null;
+function showConfirm({ title='Confirmar', msg='', icon='⚠️', confirmLabel='Confirmar', confirmClass='btn-danger', cancelLabel='Cancel·lar' } = {}) {
+  return new Promise(resolve => {
+    modalResolve = resolve;
+    document.getElementById('modal-icon').textContent = icon;
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-msg').textContent = msg;
+    const cb = document.getElementById('modal-confirm-btn');
+    cb.textContent = confirmLabel;
+    cb.className = 'btn ' + confirmClass;
+    document.getElementById('modal-cancel-btn').textContent = cancelLabel;
+    document.getElementById('modal-overlay').classList.add('show');
+  });
+}
+function modalConfirm() { document.getElementById('modal-overlay').classList.remove('show'); if (modalResolve) { modalResolve(true); modalResolve = null; } }
+function modalCancel()  { document.getElementById('modal-overlay').classList.remove('show'); if (modalResolve) { modalResolve(false); modalResolve = null; } }
+// Tancar amb Escape
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('modal-overlay').classList.contains('show')) modalCancel();
+});
+
+// ===================== MILLORA 4: UNDO =====================
+let undoStack = null; // guarda snapshot { discos, programes } i descripció
+let undoTimer = null;
+function pushUndo(desc, snapshotDiscos, snapshotProgrames) {
+  undoStack = {
+    desc,
+    discos: JSON.parse(JSON.stringify(snapshotDiscos)),
+    programes: JSON.parse(JSON.stringify(snapshotProgrames))
+  };
+  showUndoToast(`🗑 ${desc}`);
+}
+function showUndoToast(msg) {
+  const t = document.getElementById('undo-toast');
+  document.getElementById('undo-msg').textContent = msg;
+  t.classList.add('show');
+  if (undoTimer) clearTimeout(undoTimer);
+  undoTimer = setTimeout(() => { t.classList.remove('show'); undoStack = null; }, 7000);
+}
+function doUndo() {
+  if (!undoStack) return;
+  discos = undoStack.discos;
+  programes = undoStack.programes;
+  saveData();
+  renderDiscosTable(); renderDiscosSpreadsheet(); renderProgramesTable(); renderProgramesSpreadsheet(); renderDashboard(); updateImportProgSelect();
+  document.getElementById('undo-toast').classList.remove('show');
+  undoStack = null;
+  if (undoTimer) clearTimeout(undoTimer);
+}
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+    if (undoStack) { e.preventDefault(); doUndo(); }
+  }
+});
+
+// ===================== MILLORA 3: CERCA GLOBAL =====================
+function onGlobalSearch(q) {
+  const dropdown = document.getElementById('global-search-dropdown');
+  if (!q || q.trim().length < 2) { dropdown.classList.remove('show'); return; }
+  const qLow = q.trim().toLowerCase();
+  let html = '';
+  // Discos
+  const matchDiscos = discos.filter(d =>
+    [d.podcast, d.episodi, d.temes, d.autor, d.cd, d.notes].some(f => (f||'').toLowerCase().includes(qLow))
+  ).slice(0, 6);
+  if (matchDiscos.length) {
+    html += `<div class="gs-section-title">💿 Discos</div>`;
+    matchDiscos.forEach(d => {
+      html += `<div class="gs-item" onclick="gsGoDisc('${d.id}')"><span class="gs-item-label">${esc(d.podcast||'?')}</span><span class="gs-item-sub">${esc(d.episodi||'')} ${esc(d.temes ? '· '+d.temes : '')}</span></div>`;
+    });
+  }
+  // Programes
+  const matchProgs = programes.filter(p =>
+    [p.num, p.episodi, p.programa, p.produit].some(f => (f||'').toLowerCase().includes(qLow))
+  ).slice(0, 5);
+  if (matchProgs.length) {
+    if (html) html += '<div class="gs-divider"></div>';
+    html += `<div class="gs-section-title">📅 Programes</div>`;
+    matchProgs.forEach(p => {
+      html += `<div class="gs-item" onclick="gsGoProg('${p.id}')"><span class="gs-item-label">#${esc(p.num)}</span><span class="gs-item-sub">${esc(p.programa||p.episodi||'')}</span></div>`;
+    });
+  }
+  // Dates
+  const matchDates = dates.filter(d =>
+    [d.podcast1, d.podcast2, d.numProg1, d.numProg2, d.obs].some(f => (f||'').toLowerCase().includes(qLow))
+  ).slice(0, 4);
+  if (matchDates.length) {
+    if (html) html += '<div class="gs-divider"></div>';
+    html += `<div class="gs-section-title">📆 Dates</div>`;
+    matchDates.forEach(d => {
+      html += `<div class="gs-item" onclick="gsGoDate('${d.data}')"><span class="gs-item-label">${esc(d.data)}</span><span class="gs-item-sub">${esc(d.podcast1||'')} ${esc(d.numProg1 ? '· Prog '+d.numProg1 : '')}</span></div>`;
+    });
+  }
+  if (!html) html = '<div class="gs-empty">Sense resultats</div>';
+  dropdown.innerHTML = html;
+  dropdown.classList.add('show');
+}
+function gsGoDisc(id) {
+  closeGlobalSearch();
+  editDisc(id);
+}
+function gsGoProg(id) {
+  closeGlobalSearch();
+  editProg(id);
+}
+function gsGoDate(data) {
+  closeGlobalSearch();
+  // Detectar any/mes i navegar
+  const parts = data.split('-');
+  const year = parseInt(parts[2]);
+  const month = parseInt(parts[1]) - 1;
+  currentYear = year; currentMonth = month;
+  showSection('dates');
+  setTimeout(() => {
+    const row = document.querySelector(`#dates-spreadsheet-tbody td`);
+    // scroll to date
+    const allRows = document.querySelectorAll('#dates-spreadsheet-tbody tr');
+    for (const tr of allRows) {
+      if (tr.children[0] && tr.children[0].textContent.trim() === data) {
+        tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        tr.style.outline = '3px solid #3498db';
+        setTimeout(() => tr.style.outline = '', 2000);
+        break;
+      }
+    }
+  }, 150);
+}
+function closeGlobalSearch() {
+  document.getElementById('global-search-input').value = '';
+  document.getElementById('global-search-dropdown').classList.remove('show');
+}
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('global-search-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('global-search-dropdown').classList.remove('show');
+  }
+});
+
+// ===================== MILLORA 5: DRECERES DE TECLAT SPREADSHEET =====================
+document.addEventListener('keydown', function(e) {
+  const active = document.activeElement;
+  if (!active || !active.classList.contains('spreadsheet-input')) return;
+  const td = active.closest('td');
+  const tr = active.closest('tr');
+  if (!td || !tr) return;
+  if (e.key === 'Escape') {
+    active.blur();
+    e.preventDefault();
+  } else if (e.key === 'Tab' || e.key === 'Enter') {
+    e.preventDefault();
+    active.blur();
+    // Tab: cel·la següent de la mateixa fila; Enter: fila següent, mateixa columna
+    const allTds = Array.from(tr.querySelectorAll('td'));
+    const tdIndex = allTds.indexOf(td);
+    if (e.key === 'Tab' && !e.shiftKey) {
+      // Buscar el proper input editable a la mateixa fila
+      for (let i = tdIndex + 1; i < allTds.length; i++) {
+        const inp = allTds[i].querySelector('input.spreadsheet-input');
+        if (inp) { inp.focus(); inp.select(); return; }
+      }
+      // Passar a la fila següent, primera columna
+      const nextTr = tr.nextElementSibling;
+      if (nextTr) {
+        const inp = nextTr.querySelector('input.spreadsheet-input');
+        if (inp) { inp.focus(); inp.select(); }
+      }
+    } else if (e.key === 'Tab' && e.shiftKey) {
+      for (let i = tdIndex - 1; i >= 0; i--) {
+        const inp = allTds[i].querySelector('input.spreadsheet-input');
+        if (inp) { inp.focus(); inp.select(); return; }
+      }
+      const prevTr = tr.previousElementSibling;
+      if (prevTr) {
+        const tds = Array.from(prevTr.querySelectorAll('td'));
+        for (let i = tds.length - 1; i >= 0; i--) {
+          const inp = tds[i].querySelector('input.spreadsheet-input');
+          if (inp) { inp.focus(); inp.select(); return; }
+        }
+      }
+    } else if (e.key === 'Enter') {
+      const colIndex = allTds.indexOf(td);
+      const nextTr = tr.nextElementSibling;
+      if (nextTr) {
+        const nextTds = Array.from(nextTr.querySelectorAll('td'));
+        if (nextTds[colIndex]) {
+          const inp = nextTds[colIndex].querySelector('input.spreadsheet-input');
+          if (inp) { inp.focus(); inp.select(); }
+        }
+      }
+    }
+  }
+});
+
+// ===================== MILLORA 6: COMPTADOR NOTES =====================
+function updateNotesCounter() {
+  const ta = document.getElementById('d-notes');
+  const counter = document.getElementById('notes-counter');
+  if (!ta || !counter) return;
+  const len = ta.value.length;
+  const lines = ta.value.split('\n').length;
+  counter.textContent = `${len.toLocaleString('ca-ES')} caràcters · ${lines} línies`;
+  counter.className = 'notes-counter' + (len > 8000 ? ' warn' : '');
+}
+
+function parsePastedData(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+  const rows = [];
+  for (let line of lines) {
+    let cols;
+    if (line.includes('\t')) {
+      cols = line.split('\t');
+    } else {
+      const regex = /(".*?"|[^,]+)(?=\s*,|\s*$)/g;
+      const matches = [...line.matchAll(regex)];
+      if (matches.length > 0) {
+        cols = matches.map(m => m[0].replace(/^"|"$/g, '').trim());
+      } else {
+        cols = line.split(',').map(c => c.trim());
+      }
+    }
+    cols = cols.map(c => c.replace(/^["']|["']$/g, '').trim());
+    while (cols.length < 8) cols.push('');
+    rows.push(cols);
+  }
+  return rows;
+}
+
+function previewPasteData() {
+  const text = document.getElementById('paste-data').value;
+  if (!text.trim()) {
+    document.getElementById('paste-preview').innerHTML = '<div style="padding:20px;text-align:center;color:#999;">No hi ha dades per previsualitzar</div>';
+    document.getElementById('paste-preview').style.display = 'block';
+    return;
+  }
+  const rows = parsePastedData(text);
+  if (rows.length === 0) {
+    document.getElementById('paste-preview').innerHTML = '<div style="padding:20px;text-align:center;color:#999;">No s\'ha pogut interpretar cap dada</div>';
+    document.getElementById('paste-preview').style.display = 'block';
+    return;
+  }
+  let html = '<table><thead><tr>';
+  const headers = ['Podcast', 'Episodi', 'Temes', 'Autor', 'CD', 'Any', 'Link', 'Notes'];
+  headers.forEach(h => html += `<th>${h}</th>`);
+  html += '</thead><tbody>';
+  for (let i = 0; i < Math.min(rows.length, 20); i++) {
+    const row = rows[i];
+    html += '<tr>';
+    for (let j = 0; j < 8; j++) {
+      const val = row[j] || '';
+      html += `<td title="${esc(val)}">${val.length > 30 ? esc(val.substring(0,30)) + '...' : esc(val)}</td>`;
+    }
+    html += '</tr>';
+  }
+  if (rows.length > 20) {
+    html += `<tr><td colspan="8" style="text-align:center">... i ${rows.length - 20} files més</td></tr>`;
+  }
+  html += '</tbody></table>';
+  document.getElementById('paste-preview').innerHTML = html;
+  document.getElementById('paste-preview').style.display = 'block';
+}
+
+function clearImportData() {
+  document.getElementById('paste-data').value = '';
+  document.getElementById('paste-preview').style.display = 'none';
+  document.getElementById('paste-preview').innerHTML = '';
+}
+
+function importPasteData() {
+  const text = document.getElementById('paste-data').value;
+  if (!text.trim()) { alert('No hi ha dades per importar'); return; }
+  const rows = parsePastedData(text);
+  if (rows.length === 0) { alert('No s\'ha pogut interpretar cap dada'); return; }
+  const progId = document.getElementById('import-prog-select').value;
+  let imported = 0;
+  for (let i = 0; i < rows.length; i++) {
+    const cols = rows[i];
+    if (cols.length < 1 || (cols[0] === '' && cols[1] === '')) continue;
+    discos.push({
+      id: uid(),
+      podcast: cols[0] || '',
+      episodi: cols[1] || '',
+      temes: cols[2] || '',
+      autor: cols[3] || '',
+      cd: cols[4] || '',
+      any: cols[5] || '',
+      link: cols[6] || '',
+      notes: cols[7] || '',
+      progId: progId || null
+    });
+    imported++;
+  }
+  if (imported > 0) {
+    saveData();
+    alert(`✅ Importats ${imported} discos correctament!`);
+    document.getElementById('paste-data').value = '';
+    document.getElementById('paste-preview').style.display = 'none';
+    renderDiscosTable();
+    renderDashboard();
+    renderDiscosSpreadsheet();
+  } else {
+    alert('No s\'ha importat cap disc');
+  }
+}
+
+function renderDashboard() {
+  document.getElementById('stat-discos').textContent = discos.length;
+  document.getElementById('stat-programes').textContent = programes.length;
+  document.getElementById('stat-relacions').textContent = discos.filter(d=>d.progId).length;
+  document.getElementById('stat-orfes').textContent = discos.filter(d=>!d.progId).length;
+  const dd = document.getElementById('dash-discos');
+  dd.innerHTML = discos.slice(-8).reverse().map(d=>`<div style="padding:7.5px 0;border-bottom:1px solid #f0f0f0;cursor:pointer" onclick="editDisc('${d.id}')"><span class="badge badge-blue">${esc(d.podcast||'?')}</span> <span>${esc(d.episodi||'—')}</span></div>`).join('') || '<div class="empty">Sense discos</div>';
+  const dp = document.getElementById('dash-programes');
+  dp.innerHTML = programes.slice(-8).reverse().map(p=>`<div style="padding:7.5px 0;border-bottom:1px solid #f0f0f0;cursor:pointer" onclick="editProg('${p.id}')"><span class="badge badge-teal">#${esc(p.num)}</span> <span>${esc(p.programa||'—')}</span></div>`).join('') || '<div class="empty">Sense programes</div>';
+}
+
+function renderDiscosTable() {
+  const q = (document.getElementById('disco-search')?.value || '').toLowerCase();
+  const fp = document.getElementById('disco-filter-prog')?.value;
+  let rows = discos.filter(d => {
+    const match = !q || [d.podcast, d.episodi, d.autor, d.temes].some(f => (f || '').toLowerCase().includes(q));
+    return match && (!fp || d.progId === fp);
+  });
+  currentDiscoRows = rows;
+  const tbody = document.getElementById('discos-tbody');
+  if (!rows.length) { tbody.innerHTML = '<tr><td colspan="9"><div class="empty">Sense resultats</div></td></tr>'; return; }
+  tbody.innerHTML = rows.map(d => {
+    const prog = programes.find(p => p.id === d.progId);
+    const sel = selectedDiscos.has(d.id);
+    return `<tr class="${sel ? 'selected-row' : ''}">
+      <td><input type="checkbox" ${sel ? 'checked' : ''} onchange="toggleDiscoSel('${d.id}', this)"></td>
+      <td style="cursor:pointer;color:#185fa5" onclick="editDisc('${d.id}')">${esc(d.podcast || '—')}</td>
+      <td style="cursor:pointer" onclick="editDisc('${d.id}')">${esc(d.episodi || '—')}</td>
+      <td style="cursor:pointer" onclick="editDisc('${d.id}')">${esc(d.temes || '—')}</td>
+      <td style="cursor:pointer" onclick="editDisc('${d.id}')">${esc(d.autor || '—')}</td>
+      <td style="cursor:pointer" onclick="editDisc('${d.id}')">${esc(d.cd || '—')}</td>
+      <td style="cursor:pointer" onclick="editDisc('${d.id}')">${esc(d.any || '—')}</td>
+      <td style="cursor:pointer" onclick="editDisc('${d.id}')">${prog ? `<span class="badge badge-teal">#${esc(prog.num)}</span>` : '—'}</td>
+      <td><button class="btn btn-sm" onclick="editDisc('${d.id}')">✏️</button> <button class="btn btn-sm btn-danger" onclick="deleteDisc('${d.id}')">🗑</button></td>
+     `;
+  }).join('');
+  updateDiscosBulkBar();
+}
+
+function toggleDiscoSel(id, cb) { if (cb.checked) selectedDiscos.add(id); else selectedDiscos.delete(id); renderDiscosTable(); }
+function toggleAllDiscos(cb) { if (cb.checked) currentDiscoRows.forEach(d => selectedDiscos.add(d.id)); else selectedDiscos.clear(); renderDiscosTable(); }
+
+function editDiscFromSpreadsheet(id) {
+  const d = discos.find(x => x.id === id);
+  if (!d) return;
+  showSection('discos-form');
+  document.getElementById('disco-id').value = d.id;
+  document.getElementById('d-podcast').value = d.podcast || '';
+  document.getElementById('d-episodi').value = d.episodi || '';
+  document.getElementById('d-temes').value = d.temes || '';
+  document.getElementById('d-autor').value = d.autor || '';
+  document.getElementById('d-cd').value = d.cd || '';
+  document.getElementById('d-any').value = d.any || '';
+  document.getElementById('d-link').value = d.link || '';
+  document.getElementById('d-notes').value = d.notes || '';
+  updateNotesCounter();
+  renderProgSelectorList();
+  setNotesMode('editor');
+  // Limitar navegació a la selecció si n'hi ha
+  actualitzarLlistaDiscosOrdenats(true);
+  const idx = discosOrdenats.findIndex(disc => disc.id === id);
+  if (idx >= 0) carregarDiscPerIndex(idx);
+}
+
+function editDisc(id) {
+  const d = discos.find(x => x.id === id);
+  if (!d) return;
+  showSection('discos-form');
+  document.getElementById('disco-id').value = d.id;
+  document.getElementById('disco-form-title').textContent = 'Editar Disc';
+  document.getElementById('d-podcast').value = d.podcast || '';
+  document.getElementById('d-episodi').value = d.episodi || '';
+  document.getElementById('d-temes').value = d.temes || '';
+  document.getElementById('d-autor').value = d.autor || '';
+  document.getElementById('d-cd').value = d.cd || '';
+  document.getElementById('d-any').value = d.any || '';
+  document.getElementById('d-link').value = d.link || '';
+  document.getElementById('d-notes').value = d.notes || '';
+  updateNotesCounter();
+  renderProgSelectorList();
+  setNotesMode('editor');
+  actualitzarLlistaDiscosOrdenats();
+  const idx = discosOrdenats.findIndex(disc => disc.id === id);
+  if (idx >= 0) carregarDiscPerIndex(idx);
+}
+
+async function deleteDisc(id) {
+  const d = discos.find(x => x.id === id);
+  const ok = await showConfirm({ title: 'Eliminar disc', msg: `Eliminar "${d?.podcast || 'aquest disc'}"? Podràs desfer-ho durant 7 segons.`, icon: '🗑️', confirmLabel: 'Eliminar', confirmClass: 'btn-danger' });
+  if (!ok) return;
+  const snapD = JSON.parse(JSON.stringify(discos));
+  const snapP = JSON.parse(JSON.stringify(programes));
+  discos = discos.filter(x => x.id !== id);
+  selectedDiscos.delete(id);
+  saveData();
+  renderDiscosTable();
+  renderDashboard();
+  renderDiscosSpreadsheet();
+  pushUndo(`Disc eliminat: ${d?.podcast || id}`, snapD, snapP);
+}
+
+function renderProgramesTable() {
+  const q = (document.getElementById('prog-search')?.value || '').toLowerCase();
+  let rows = programes.filter(p => !q || [p.num, p.episodi, p.programa, p.produit].some(f => (f || '').toLowerCase().includes(q)));
+  currentProgRows = rows;
+  const tbody = document.getElementById('programes-tbody');
+  if (!rows.length) { tbody.innerHTML = '<tr><td colspan="9"><div class="empty">Sense resultats</div></td></tr>'; updateBulkBarProgrames(); return; }
+  tbody.innerHTML = rows.map(p => {
+    const linked = discos.filter(d => d.progId === p.id).length;
+    const sel = selectedProgrames.has(p.id);
+    return `<tr class="${sel ? 'selected-row' : ''}">
+      <td><input type="checkbox" ${sel ? 'checked' : ''} onchange="toggleProgSel('${p.id}', this)"></td>
+      <td style="cursor:pointer;color:#185fa5" onclick="editProg('${p.id}')"><strong>#${esc(p.num)}</strong></td>
+      <td style="cursor:pointer" onclick="editProg('${p.id}')">${esc(p.episodi || '—')}</td>
+      <td style="cursor:pointer" onclick="editProg('${p.id}')">${esc(p.programa || '—')}</td>
+      <td style="cursor:pointer" onclick="editProg('${p.id}')">${esc(p.produit || '—')}</td>
+      <td style="cursor:pointer" onclick="editProg('${p.id}')">${fmt(p.dataProd)}</td>
+      <td style="cursor:pointer" onclick="editProg('${p.id}')">${fmt(p.dataEmissio)}</td>
+      <td style="cursor:pointer" onclick="editProg('${p.id}')"><span class="badge badge-blue">${linked} disc${linked !== 1 ? 'os' : ''}</span></td>
+      <td><button class="btn btn-sm" onclick="editProg('${p.id}')">✏️</button> <button class="btn btn-sm btn-danger" onclick="deleteProg('${p.id}')">🗑</button></td>
+     `;
+  }).join('');
+  updateBulkBarProgrames();
+}
+
+function toggleProgSel(id, cb) { if (cb.checked) selectedProgrames.add(id); else selectedProgrames.delete(id); renderProgramesTable(); }
+function toggleAllProgrames(cb) { if (cb.checked) currentProgRows.forEach(p => selectedProgrames.add(p.id)); else selectedProgrames.clear(); renderProgramesTable(); }
+function bulkDeselectProgrames() { selectedProgrames.clear(); renderProgramesTable(); document.getElementById('prog-check-all').checked = false; }
+function updateBulkBarProgrames() { const n = selectedProgrames.size; const bar = document.getElementById('prog-bulk-bar'); const count = document.getElementById('prog-bulk-count'); if (bar && count) { bar.classList.toggle('visible', n > 0); count.textContent = n + ' seleccionat' + (n !== 1 ? 's' : ''); } }
+
+function editProg(id) {
+  const p = programes.find(x => x.id === id);
+  if (!p) return;
+  showSection('programes-form');
+  document.getElementById('prog-id').value = p.id;
+  document.getElementById('prog-form-title').textContent = 'Editar Programa';
+  document.getElementById('p-num').value = p.num || '';
+  document.getElementById('p-episodi').value = p.episodi || '';
+  document.getElementById('p-programa').value = p.programa || '';
+  document.getElementById('p-produit').value = p.produit || '';
+  document.getElementById('p-produit-color').value = p.colorProduit || '#ffffff';
+  document.getElementById('p-data-prod').value = p.dataProd || '';
+  document.getElementById('p-data-emissio').value = p.dataEmissio || '';
+  progFormColor = p.lineColor || null;
+  actualitzarSwatchColorProg();
+  renderProgDiscosPanel(p.id);
+}
+
+async function deleteProg(id) {
+  const p = programes.find(x => x.id === id);
+  const linked = discos.filter(d => d.progId === id).length;
+  const ok = await showConfirm({ title: 'Eliminar programa', msg: `Eliminar "#${p?.num} ${p?.programa || ''}"?${linked ? ` Els ${linked} discos vinculats quedaran sense programa.` : ''} Podràs desfer-ho durant 7 segons.`, icon: '🗑️', confirmLabel: 'Eliminar', confirmClass: 'btn-danger' });
+  if (!ok) return;
+  const snapD = JSON.parse(JSON.stringify(discos));
+  const snapP = JSON.parse(JSON.stringify(programes));
+  discos.forEach(d => { if (d.progId === id) d.progId = null; });
+  programes = programes.filter(p => p.id !== id);
+  selectedProgrames.delete(id);
+  saveData();
+  renderProgramesTable();
+  renderDiscosTable();
+  renderDashboard();
+  renderProgramesSpreadsheet();
+  renderDiscosSpreadsheet();
+  pushUndo(`Programa eliminat: #${p?.num}`, snapD, snapP);
+}
+
+function saveProg() {
+  const num = document.getElementById('p-num').value.trim();
+  const id = document.getElementById('prog-id').value;
+  const errSpan = document.getElementById('prog-err');
+  if (errSpan) errSpan.textContent = '';
+  if (!num) { if (errSpan) errSpan.textContent = 'El número de programa és obligatori'; return; }
+  if (!id && programes.find(p => p.num === num)) { if (errSpan) errSpan.textContent = 'Ja existeix un programa amb aquest número'; return; }
+  const existent = id ? programes.find(p => p.id === id) : null;
+  const prog = {
+    ...(existent || {}),
+    id: id || uid(),
+    num: num,
+    episodi: document.getElementById('p-episodi').value.trim(),
+    programa: document.getElementById('p-programa').value.trim(),
+    produit: document.getElementById('p-produit').value.trim(),
+    colorProduit: document.getElementById('p-produit-color').value,
+    dataProd: document.getElementById('p-data-prod').value,
+    dataEmissio: document.getElementById('p-data-emissio').value,
+    lineColor: progFormColor || null
+  };
+  if (id) { const i = programes.findIndex(p => p.id === id); if (i >= 0) programes[i] = prog; } 
+  else { programes.push(prog); }
+  saveData();
+  document.getElementById('prog-id').value = prog.id;
+  const msgSpan = document.getElementById('prog-msg');
+  if (msgSpan) msgSpan.textContent = '✓ Programa guardat';
+  setTimeout(() => { if (msgSpan) msgSpan.textContent = ''; }, 2000);
+  renderProgramesTable();
+  renderDashboard();
+  renderProgramesSpreadsheet();
+  renderDiscosSpreadsheet();
+  updateImportProgSelect();
+  renderProgDiscosPanel(prog.id);
+}
+
+function renderProgDiscosPanel(progId) {
+  const panel   = document.getElementById('prog-discos-panel');
+  const list    = document.getElementById('prog-discos-list');
+  const counter = document.getElementById('prog-discos-count');
+  if (!panel || !list) return;
+
+  const linked = discos.filter(d => d.progId === progId);
+  counter.textContent = `${linked.length} disc${linked.length !== 1 ? 'os' : ''}`;
+
+  if (linked.length === 0) {
+    panel.style.display = 'flex';
+    list.innerHTML = `<div style="padding:2rem;text-align:center;color:#aaa;font-size:15px">Cap disc vinculat a aquest programa</div>`;
+    return;
+  }
+
+  panel.style.display = 'flex';
+
+  // Capçalera de la mini-taula
+  list.innerHTML = `
+    <table style="width:100%;border-collapse:collapse;font-size:14px">
+      <thead>
+        <tr style="background:#e8f0fe;position:sticky;top:0;z-index:1">
+          <th style="padding:8px 10px;text-align:left;font-weight:600;color:#444;border-bottom:1px solid #d0ddf5">🔢 Nº Programa</th>
+          <th style="padding:8px 10px;text-align:left;font-weight:600;color:#444;border-bottom:1px solid #d0ddf5">👤 Autor</th>
+          <th style="padding:8px 10px;text-align:left;font-weight:600;color:#444;border-bottom:1px solid #d0ddf5">💿 CD</th>
+          <th style="padding:8px 10px;text-align:left;font-weight:600;color:#444;border-bottom:1px solid #d0ddf5">🎵 Temes</th>
+          <th style="padding:8px 10px;text-align:left;font-weight:600;color:#444;border-bottom:1px solid #d0ddf5">🔗 Link</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${linked.map((d, i) => {
+          const prog = programes.find(p => p.id === d.progId);
+          return `
+          <tr onclick="editDisc('${d.id}')" title="Clic per editar disc" style="cursor:pointer;background:${i % 2 === 0 ? '#fff' : '#f9fbff'};transition:background 0.1s"
+              onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='${i % 2 === 0 ? '#fff' : '#f9fbff'}'">
+            <td style="padding:8px 10px;border-bottom:1px solid #eef2fb;color:#185fa5;font-size:13px;font-weight:600">${esc(prog ? (prog.num || '—') : '—')}</td>
+            <td style="padding:8px 10px;border-bottom:1px solid #eef2fb;color:#1a1a1a">${esc(d.autor || '—')}</td>
+            <td style="padding:8px 10px;border-bottom:1px solid #eef2fb;color:#555;font-family:monospace;font-size:13px">${esc(d.cd || '—')}</td>
+            <td style="padding:8px 10px;border-bottom:1px solid #eef2fb;color:#555;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(d.temes || '')}">${esc(d.temes || '—')}</td>
+            <td style="padding:8px 10px;border-bottom:1px solid #eef2fb;font-size:13px">${d.link ? `<a href="${esc(d.link)}" target="_blank" onclick="event.stopPropagation()" style="color:#185fa5">🔗 Obrir</a>` : '—'}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+
+function exportProgDiscos() {
+  const progId = document.getElementById('prog-id').value;
+  const prog = programes.find(p => p.id === progId);
+  if (!prog) return;
+  const linked = discos.filter(d => d.progId === progId);
+
+  const lines = linked.map(d => {
+    const p = programes.find(x => x.id === d.progId);
+    return [p ? (p.num || '—') : '—', d.autor || '—', d.cd || '—', d.temes || '—', d.link || '—'].join('\t');
+  });
+  const text = lines.join('\n');
+
+  const filename = `programa_${(prog.num || 'sense-num').replace(/\s/g,'-')}_${(prog.programa || '').replace(/\s/g,'-').replace(/[^a-zA-Z0-9_\-]/g,'').slice(0,30)}.txt`;
+
+  if (window.showSaveFilePicker) {
+    window.showSaveFilePicker({
+      suggestedName: filename,
+      types: [{ description: 'Text', accept: { 'text/plain': ['.txt'] } }]
+    }).then(async fh => {
+      const w = await fh.createWritable();
+      await w.write(text);
+      await w.close();
+      showToast(`✅ Exportat: ${linked.length} disc${linked.length !== 1 ? 'os' : ''}`);
+    }).catch(() => { _downloadTxt(text, filename, linked.length); });
+  } else {
+    _downloadTxt(text, filename, linked.length);
+  }
+}
+
+function _downloadTxt(text, filename, count) {
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  showToast(`✅ Exportat: ${count} disc${count !== 1 ? 'os' : ''}`);
+}
+
+function resetProgForm() {
+  document.getElementById('prog-id').value = '';
+  document.getElementById('prog-form-title').textContent = 'Nou Programa';
+  document.getElementById('p-num').value = '';
+  document.getElementById('p-episodi').value = '';
+  document.getElementById('p-programa').value = '';
+  document.getElementById('p-produit').value = '';
+  document.getElementById('p-produit-color').value = '#ffffff';
+  document.getElementById('p-data-prod').value = '';
+  document.getElementById('p-data-emissio').value = '';
+  progFormColor = null;
+  actualitzarSwatchColorProg();
+  const errSpan = document.getElementById('prog-err');
+  if (errSpan) errSpan.textContent = '';
+  const panel = document.getElementById('prog-discos-panel');
+  if (panel) panel.style.display = 'none';
+}
+
+function selectColorForm(colorName, colorValue) {
+  document.getElementById('p-produit-color').value = colorValue;
+}
+
+function actualitzarLlistaDiscosOrdenats(limitarASeleccio = false) {
+  if (limitarASeleccio && spreadsheetSelectedDiscos.size > 0) {
+    // Mantenir l'ordre original dels discos però filtrant pels seleccionats
+    discosOrdenats = discos.filter(d => spreadsheetSelectedDiscos.has(d.id));
+  } else {
+    discosOrdenats = [...discos];
+  }
+}
+function carregarDiscPerIndex(index) {
+  if (index < 0 || index >= discosOrdenats.length) return false;
+  indexDiscActual = index;
+  const disc = discosOrdenats[indexDiscActual];
+  document.getElementById('disco-id').value = disc.id;
+  document.getElementById('disco-form-title').textContent = `Editar Disc (${indexDiscActual+1}/${discosOrdenats.length})`;
+  document.getElementById('d-podcast').value = disc.podcast || '';
+  document.getElementById('d-episodi').value = disc.episodi || '';
+  document.getElementById('d-temes').value = disc.temes || '';
+  document.getElementById('d-autor').value = disc.autor || '';
+  document.getElementById('d-cd').value = disc.cd || '';
+  document.getElementById('d-any').value = disc.any || '';
+  document.getElementById('d-link').value = disc.link || '';
+  document.getElementById('d-notes').value = disc.notes || '';
+  updateNotesCounter();
+  selectedProgId = disc.progId || null;
+  renderProgSelectorList();
+  setNotesMode('editor');
+  discoFormColor = disc.lineColor || null;
+  actualitzarSwatchColorDisc();
+  const enSeleccio = spreadsheetSelectedDiscos.size > 0 && discosOrdenats.length < discos.length;
+  const label = enSeleccio ? `seleccionats` : `discos`;
+  document.getElementById('disco-navegacio-counter').innerHTML = `<strong>${indexDiscActual+1}</strong> de <strong>${discosOrdenats.length}</strong> ${label}${enSeleccio ? ' <span style="color:#e67e22;font-size:12px">(mode selecció)</span>' : ''}`;
+  const btnAnt = document.getElementById('btn-anterior');
+  const btnSeg = document.getElementById('btn-seguent');
+  if (btnAnt) btnAnt.disabled = (indexDiscActual <= 0);
+  if (btnSeg) btnSeg.disabled = (indexDiscActual >= discosOrdenats.length - 1);
+  return true;
+}
+function navegarDiscAnterior() { if (indexDiscActual > 0) { guardarDiscActualSenseMissatge(); carregarDiscPerIndex(indexDiscActual - 1); } }
+function navegarDiscSeguent() { if (indexDiscActual < discosOrdenats.length - 1) { guardarDiscActualSenseMissatge(); carregarDiscPerIndex(indexDiscActual + 1); } }
+function guardarDiscActualSenseMissatge() { 
+  const id = document.getElementById('disco-id').value; 
+  if (!id) return; 
+  const i = discos.findIndex(d => d.id === id); 
+  if (i < 0) return;
+  const disc = { 
+    ...discos[i],
+    id: id, 
+    podcast: document.getElementById('d-podcast').value.trim(), 
+    episodi: document.getElementById('d-episodi').value.trim(), 
+    temes: document.getElementById('d-temes').value.trim(), 
+    autor: document.getElementById('d-autor').value.trim(), 
+    cd: document.getElementById('d-cd').value.trim(), 
+    any: document.getElementById('d-any').value.trim(), 
+    link: document.getElementById('d-link').value.trim(), 
+    notes: document.getElementById('d-notes').value, 
+    progId: selectedProgId || null,
+    lineColor: discoFormColor || null
+  }; 
+  discos[i] = disc; 
+  saveData(); 
+}
+function guardarDiscActual() { 
+  const id = document.getElementById('disco-id').value; 
+  const existent = id ? discos.find(d => d.id === id) : null;
+  const disc = { 
+    ...(existent || {}),
+    id: id || uid(), 
+    podcast: document.getElementById('d-podcast').value.trim(), 
+    episodi: document.getElementById('d-episodi').value.trim(), 
+    temes: document.getElementById('d-temes').value.trim(), 
+    autor: document.getElementById('d-autor').value.trim(), 
+    cd: document.getElementById('d-cd').value.trim(), 
+    any: document.getElementById('d-any').value.trim(), 
+    link: document.getElementById('d-link').value.trim(), 
+    notes: document.getElementById('d-notes').value, 
+    progId: selectedProgId || null,
+    lineColor: discoFormColor || null
+  }; 
+  if (id) { 
+    const i = discos.findIndex(d => d.id === id); 
+    if (i >= 0) discos[i] = disc; 
+  } else { 
+    discos.push(disc); 
+    document.getElementById('disco-id').value = disc.id; 
+  } 
+  saveData(); 
+  const msgSpan = document.getElementById('disco-msg');
+  if (msgSpan) msgSpan.textContent = '✓ Disc guardat';
+  setTimeout(() => { if (msgSpan) msgSpan.textContent = ''; }, 2000);
+  actualitzarLlistaDiscosOrdenats(); 
+  if (indexDiscActual >= 0) carregarDiscPerIndex(indexDiscActual); 
+  renderDiscosTable(); 
+  renderDashboard(); 
+  renderDiscosSpreadsheet(); 
+}
+async function eliminarDiscActual() { 
+  const id = document.getElementById('disco-id').value; 
+  if (!id) return;
+  const d = discos.find(x => x.id === id);
+  const ok = await showConfirm({ title: 'Eliminar disc', msg: `Eliminar "${d?.podcast || 'aquest disc'}"? Podràs desfer-ho durant 7 segons.`, icon: '🗑️', confirmLabel: 'Eliminar', confirmClass: 'btn-danger' });
+  if (!ok) return;
+  const snapD = JSON.parse(JSON.stringify(discos));
+  const snapP = JSON.parse(JSON.stringify(programes));
+  discos = discos.filter(x => x.id !== id); 
+  saveData(); 
+  pushUndo(`Disc eliminat: ${d?.podcast || id}`, snapD, snapP);
+  actualitzarLlistaDiscosOrdenats(); 
+  if (discosOrdenats.length > 0) { 
+    const nouIndex = Math.min(indexDiscActual, discosOrdenats.length - 1); 
+    carregarDiscPerIndex(nouIndex); 
+  } else { 
+    resetDiscoForm(); 
+    indexDiscActual = -1; 
+    document.getElementById('disco-navegacio-counter').innerHTML = '— Cap disc —'; 
+  } 
+  renderDiscosTable(); 
+  renderDashboard(); 
+  renderDiscosSpreadsheet(); 
+}
+function guardarDiscActualINavegar(tipus) { 
+  guardarDiscActualSenseMissatge(); 
+  if (tipus === 'nou') { 
+    resetDiscoForm(); 
+    indexDiscActual = -1; 
+    document.getElementById('disco-navegacio-counter').innerHTML = '— Nou disc —'; 
+    const btnAnt = document.getElementById('btn-anterior');
+    const btnSeg = document.getElementById('btn-seguent');
+    if (btnAnt) btnAnt.disabled = true;
+    if (btnSeg) btnSeg.disabled = true;
+  } else { 
+    actualitzarLlistaDiscosOrdenats(); 
+    carregarDiscPerIndex(indexDiscActual); 
+  } 
+}
+function setNotesMode(mode) { 
+  notesMode = mode; 
+  const isEditor = mode === 'editor'; 
+  const editorWrap = document.getElementById('notes-editor-wrap');
+  const previewWrap = document.getElementById('notes-preview-wrap');
+  const tabEditor = document.getElementById('tab-editor');
+  const tabPreview = document.getElementById('tab-preview');
+  if (editorWrap) editorWrap.style.display = isEditor ? 'block' : 'none'; 
+  if (previewWrap) previewWrap.style.display = isEditor ? 'none' : 'block'; 
+  if (tabEditor) tabEditor.classList.toggle('active', isEditor); 
+  if (tabPreview) tabPreview.classList.toggle('active', !isEditor); 
+  if (!isEditor) { 
+    const notes = document.getElementById('d-notes').value || ''; 
+    const previewContent = document.getElementById('notes-preview-content');
+    if (previewContent) previewContent.innerHTML = esc(notes).replace(/\n/g,'<br>') || '<span style="color:#aaa">(sense notes)</span>'; 
+  } 
+}
+function insertNotes(text) { 
+  const ta = document.getElementById('d-notes'); 
+  if (!ta) return;
+  const start = ta.selectionStart; 
+  const end = ta.selectionEnd; 
+  ta.value = ta.value.substring(0, start) + text + ta.value.substring(end); 
+  ta.selectionStart = ta.selectionEnd = start + text.length; 
+  ta.focus(); 
+}
+function renderProgSelectorList() { 
+  const list = document.getElementById('prog-selector-list'); 
+  if (!list) return;
+  if (!programes.length) { list.innerHTML = '<div class="prog-option">Sense programes</div>'; return; } 
+  list.innerHTML = `<div class="prog-option ${!selectedProgId ? 'selected' : ''}" onclick="selectProg(null,this)">— Sense —</div>` + programes.map(p => `<div class="prog-option ${selectedProgId === p.id ? 'selected' : ''}" onclick="selectProg('${p.id}',this)">#${esc(p.num)} — ${esc(p.programa||p.episodi||'Programa')}</div>`).join(''); 
+}
+function selectProg(id, el) { 
+  selectedProgId = id; 
+  const options = document.querySelectorAll('#prog-selector-list .prog-option');
+  options.forEach(o => o.classList.remove('selected')); 
+  if (el) el.classList.add('selected'); 
+}
+function resetDiscoForm() { 
+  document.getElementById('disco-id').value = ''; 
+  document.getElementById('disco-form-title').textContent = 'Nou Disc'; 
+  document.getElementById('d-podcast').value = '';
+  document.getElementById('d-episodi').value = '';
+  document.getElementById('d-temes').value = '';
+  document.getElementById('d-autor').value = '';
+  document.getElementById('d-cd').value = '';
+  document.getElementById('d-any').value = '';
+  document.getElementById('d-link').value = '';
+  document.getElementById('d-notes').value = '';
+  selectedProgId = null; 
+  renderProgSelectorList(); 
+  setNotesMode('editor'); 
+  discoFormColor = null;
+  actualitzarSwatchColorDisc();
+  indexDiscActual = -1; 
+  document.getElementById('disco-navegacio-counter').innerHTML = '— Nou disc —'; 
+  const btnAnt = document.getElementById('btn-anterior');
+  const btnSeg = document.getElementById('btn-seguent');
+  if (btnAnt) btnAnt.disabled = true;
+  if (btnSeg) btnSeg.disabled = true;
+}
+
+function renderDiscosSpreadsheet() {
+  const tbody = document.getElementById('discos-spreadsheet-tbody');
+  if (!tbody) return;
+  let filtered = discos;
+  const fPodcast = document.getElementById('filter-disco-podcast')?.value.toLowerCase();
+  const fEpisodi = document.getElementById('filter-disco-episodi')?.value.toLowerCase();
+  const fTemes = document.getElementById('filter-disco-temes')?.value.toLowerCase();
+  const fAutor = document.getElementById('filter-disco-autor')?.value.toLowerCase();
+  const fCd = document.getElementById('filter-disco-cd')?.value.toLowerCase();
+  const fAny = document.getElementById('filter-disco-any')?.value.toLowerCase();
+  
+  const emptyPodcast = document.getElementById('filter-empty-podcast')?.checked;
+  const emptyEpisodi = document.getElementById('filter-empty-episodi')?.checked;
+  const emptyTemes = document.getElementById('filter-empty-temes')?.checked;
+  const emptyAutor = document.getElementById('filter-empty-autor')?.checked;
+  const emptyCd = document.getElementById('filter-empty-cd')?.checked;
+  const emptyAny = document.getElementById('filter-empty-any')?.checked;
+  const emptyLink = document.getElementById('filter-empty-link')?.checked;
+  const emptyNotes = document.getElementById('filter-empty-notes')?.checked;
+  
+  if (fPodcast) filtered = filtered.filter(d => (d.podcast || '').toLowerCase().includes(fPodcast));
+  if (fEpisodi) filtered = filtered.filter(d => (d.episodi || '').toLowerCase().includes(fEpisodi));
+  if (fTemes) filtered = filtered.filter(d => (d.temes || '').toLowerCase().includes(fTemes));
+  if (fAutor) filtered = filtered.filter(d => (d.autor || '').toLowerCase().includes(fAutor));
+  if (fCd) filtered = filtered.filter(d => (d.cd || '').toLowerCase().includes(fCd));
+  if (fAny) filtered = filtered.filter(d => (d.any || '').toLowerCase().includes(fAny));
+  
+  filtered = filtered.filter(d => {
+    if (emptyPodcast && (d.podcast || '').trim() !== '') return false;
+    if (emptyEpisodi && (d.episodi || '').trim() !== '') return false;
+    if (emptyTemes && (d.temes || '').trim() !== '') return false;
+    if (emptyAutor && (d.autor || '').trim() !== '') return false;
+    if (emptyCd && (d.cd || '').trim() !== '') return false;
+    if (emptyAny && (d.any || '').trim() !== '') return false;
+    if (emptyLink && (d.link || '').trim() !== '') return false;
+    if (emptyNotes && (d.notes || '').trim() !== '') return false;
+    return true;
+  });
+  
+  filtered = getSortedData(filtered, sortColumn, sortDirection);
+  
+  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="11"><div class="empty">Sense resultats</div></td></tr>'; 
+    const statsSpan = document.getElementById('spreadsheet-disco-stats');
+    if (statsSpan) statsSpan.textContent = '0 registres';
+    return; 
+  }
+  
+  tbody.innerHTML = filtered.map((d) => {
+    const sel = spreadsheetSelectedDiscos.has(d.id);
+    const prog = programes.find(p => p.id === d.progId);
+    return `<tr data-id="${d.id}" class="${sel ? 'selected-row' : ''}" onclick="editDiscFromSpreadsheet('${d.id}')">
+      <td><input type="checkbox" ${sel ? 'checked' : ''} onclick="event.stopPropagation(); toggleSpreadsheetDisco('${d.id}',this)"></td>
+      <td class="color-cell editable" data-cell-key="${d.id}|0" style="background-color: ${getDiscoCellColor(d, 'podcast')};" onclick="event.stopPropagation(); handleCellSelection(event, '${d.id}', 0, this)">
+        <input type="text" class="spreadsheet-input" value="${esc(d.podcast||'')}" style="background:transparent" onchange="updateSpreadsheetDisco('${d.id}','podcast',this.value)" onclick="event.stopPropagation()">
+      </td>
+      <td class="color-cell editable" data-cell-key="${d.id}|1" style="background-color: ${getDiscoCellColor(d, 'episodi')};" onclick="event.stopPropagation(); handleCellSelection(event, '${d.id}', 1, this)">
+        <input type="text" class="spreadsheet-input" value="${esc(d.episodi||'')}" style="background:transparent" onchange="updateSpreadsheetDisco('${d.id}','episodi',this.value)" onclick="event.stopPropagation()">
+      </td>
+      <td class="color-cell editable" data-cell-key="${d.id}|2" style="background-color: ${getDiscoCellColor(d, 'temes')};" onclick="event.stopPropagation(); handleCellSelection(event, '${d.id}', 2, this)">
+        <input type="text" class="spreadsheet-input" value="${esc(d.temes||'')}" style="background:transparent" onchange="updateSpreadsheetDisco('${d.id}','temes',this.value)" onclick="event.stopPropagation()">
+      </td>
+      <td class="color-cell editable" data-cell-key="${d.id}|3" style="background-color: ${getDiscoCellColor(d, 'autor')};" onclick="event.stopPropagation(); handleCellSelection(event, '${d.id}', 3, this)">
+        <input type="text" class="spreadsheet-input" value="${esc(d.autor||'')}" style="background:transparent" onchange="updateSpreadsheetDisco('${d.id}','autor',this.value)" onclick="event.stopPropagation()">
+      </td>
+      <td class="color-cell editable" data-cell-key="${d.id}|4" style="background-color: ${getDiscoCellColor(d, 'cd')};" onclick="event.stopPropagation(); handleCellSelection(event, '${d.id}', 4, this)">
+        <input type="text" class="spreadsheet-input" value="${esc(d.cd||'')}" style="background:transparent" onchange="updateSpreadsheetDisco('${d.id}','cd',this.value)" onclick="event.stopPropagation()">
+      </td>
+      <td class="color-cell editable" data-cell-key="${d.id}|5" style="background-color: ${getDiscoCellColor(d, 'any')};" onclick="event.stopPropagation(); handleCellSelection(event, '${d.id}', 5, this)">
+        <input type="text" class="spreadsheet-input" value="${esc(d.any||'')}" style="background:transparent" onchange="updateSpreadsheetDisco('${d.id}','any',this.value)" onclick="event.stopPropagation()">
+      </td>
+      <td class="color-cell editable" data-cell-key="${d.id}|6" style="background-color: ${getDiscoCellColor(d, 'link')};" onclick="event.stopPropagation(); handleCellSelection(event, '${d.id}', 6, this)">
+        <input type="text" class="spreadsheet-input" value="${esc(d.link||'')}" style="background:transparent" onchange="updateSpreadsheetDisco('${d.id}','link',this.value)" onclick="event.stopPropagation()">
+      </td>
+      <td class="color-cell editable" data-cell-key="${d.id}|7" style="background-color: ${getDiscoCellColor(d, 'notes')};" onclick="event.stopPropagation(); handleCellSelection(event, '${d.id}', 7, this)">
+        <input type="text" class="spreadsheet-input" value="${esc(d.notes||'')}" style="background:transparent" onchange="updateSpreadsheetDisco('${d.id}','notes',this.value)" onclick="event.stopPropagation()">
+      </td>
+      <td onclick="event.stopPropagation()">
+        <select class="spreadsheet-select" onchange="updateSpreadsheetDiscoProg('${d.id}',this.value)">
+          <option value="">—</option>
+          ${programes.map(p=>`<option value="${p.id}" ${d.progId===p.id?'selected':''}>${esc(p.num)} - ${esc(p.programa||'')}</option>`).join('')}
+        </select>
+      </td>
+      <td style="text-align:center"><button class="line-color-btn" onclick="event.stopPropagation(); showColorPicker((color) => paintFullDiscoLine('${d.id}', color))">🎨 Color línia</button></td>
+     `;
+  }).join('');
+  const statsSpan = document.getElementById('spreadsheet-disco-stats');
+  if (statsSpan) statsSpan.textContent = `${filtered.length} registres`;
+}
+
+function updateSpreadsheetDisco(id, field, value) { const idx = discos.findIndex(d => d.id === id); if (idx !== -1) { discos[idx][field] = value; saveData(); } }
+
+/**
+ * Actualitza el programa associat a un disc i, si s'ha seleccionat un programa,
+ * omple automàticament la columna 'episodi' amb el número del programa.
+ * @param {string} id - ID del disc.
+ * @param {string} progId - ID del programa seleccionat (pot ser buit).
+ */
+function updateSpreadsheetDiscoProg(id, progId) {
+    const idx = discos.findIndex(d => d.id === id);
+    if (idx === -1) return;
+
+    // Guardar el progId
+    discos[idx].progId = progId || null;
+
+    // Si s'ha seleccionat un programa, obtenir el seu número i actualitzar 'episodi'
+    if (progId) {
+        const prog = programes.find(p => p.id === progId);
+        if (prog && prog.num) {
+            discos[idx].episodi = prog.num; // Actualitza l'episodi amb el número del programa
+        }
+    } else {
+        // Si es desvincula el programa, podríem optar per deixar l'episodi com estava o buidar-lo.
+        // Per evitar pèrdua de dades, decidim no tocar-lo si es desvincula.
+        // Si es vol buidar, descomentar la següent línia:
+        // discos[idx].episodi = '';
+    }
+
+    // Guardar els canvis i refrescar les vistes
+    saveData();
+    renderDiscosSpreadsheet(); // Refresca el full de càlcul
+    renderDiscosTable();       // Refresca la llista de discos (per si de cas)
+}
+
+function saveAllDiscosChanges() { saveData(); alert('✅ Canvis guardats'); renderDiscosTable(); renderDashboard(); renderDiscosSpreadsheet(); }
+function addNewDiscoRow() { discos.push({ id: uid(), podcast: '', episodi: '', temes: '', autor: '', cd: '', any: '', link: '', notes: '', progId: null }); saveData(); renderDiscosSpreadsheet(); renderDiscosTable(); }
+function toggleSpreadsheetDisco(id, cb) { if (cb.checked) spreadsheetSelectedDiscos.add(id); else spreadsheetSelectedDiscos.delete(id); renderDiscosSpreadsheet(); }
+function toggleAllSpreadsheetDiscos(cb) { if (cb.checked) discos.forEach(d => spreadsheetSelectedDiscos.add(d.id)); else spreadsheetSelectedDiscos.clear(); renderDiscosSpreadsheet(); }
+function selectAllSpreadsheetDiscos() { discos.forEach(d => spreadsheetSelectedDiscos.add(d.id)); renderDiscosSpreadsheet(); }
+function deselectAllSpreadsheetDiscos() { spreadsheetSelectedDiscos.clear(); renderDiscosSpreadsheet(); }
+async function deleteSelectedSpreadsheetDiscos() { if (!spreadsheetSelectedDiscos.size) { return; } const n = spreadsheetSelectedDiscos.size; const ok = await showConfirm({ title: `Eliminar ${n} disc${n!==1?'os':''}`, msg: `S'eliminaran ${n} disc${n!==1?'os':''} seleccionat${n!==1?'s':''}. Podràs desfer-ho durant 7 segons.`, icon: '🗑️', confirmLabel: 'Eliminar', confirmClass: 'btn-danger' }); if (!ok) return; const snapD = JSON.parse(JSON.stringify(discos)); const snapP = JSON.parse(JSON.stringify(programes)); discos = discos.filter(d => !spreadsheetSelectedDiscos.has(d.id)); spreadsheetSelectedDiscos.clear(); saveData(); renderDiscosSpreadsheet(); renderDiscosTable(); renderDashboard(); pushUndo(`${n} disc${n!==1?'os':''} eliminat${n!==1?'s':''}`, snapD, snapP); }
+function applyDiscoFilters() { renderDiscosSpreadsheet(); }
+function clearDiscoFilters() { 
+  document.querySelectorAll('#discos-spreadsheet .filter-input').forEach(inp => inp.value = ''); 
+  document.querySelectorAll('#discos-spreadsheet input[type="checkbox"]').forEach(cb => { if (cb.id && cb.id.startsWith('filter-empty')) cb.checked = false; });
+  renderDiscosSpreadsheet(); 
+}
+
+function renderProgramesSpreadsheet() {
+  const tbody = document.getElementById('programes-spreadsheet-tbody');
+  if (!tbody) return;
+  let filtered = programes;
+  const fNum = document.getElementById('filter-prog-num')?.value.toLowerCase();
+  const fEpisodi = document.getElementById('filter-prog-episodi')?.value.toLowerCase();
+  const fPrograma = document.getElementById('filter-prog-programa')?.value.toLowerCase();
+  const fProduit = document.getElementById('filter-prog-produit')?.value.toLowerCase();
+  const fProduitMode = document.getElementById('filter-prog-produit-mode')?.value;
+  const fProduitText = (document.getElementById('filter-prog-produit-text')?.value || '').toLowerCase().trim();
+  
+  if (fNum) filtered = filtered.filter(p => (p.num || '').toLowerCase().includes(fNum));
+  if (fEpisodi) filtered = filtered.filter(p => (p.episodi || '').toLowerCase().includes(fEpisodi));
+  if (fPrograma) filtered = filtered.filter(p => (p.programa || '').toLowerCase().includes(fPrograma));
+  if (fProduit) filtered = filtered.filter(p => (p.produit || '').toLowerCase().includes(fProduit));
+  
+  // Filtre Conté / No conté sobre el camp Produït
+  if (fProduitMode === 'conté' && fProduitText) {
+    filtered = filtered.filter(p => (p.produit || '').toLowerCase().includes(fProduitText));
+  } else if (fProduitMode === 'no-conté' && fProduitText) {
+    filtered = filtered.filter(p => !(p.produit || '').toLowerCase().includes(fProduitText));
+  }
+  
+  if (sortProgColumn) {
+    filtered = [...filtered].sort((a, b) => {
+      let aVal = (a[sortProgColumn] || '').toLowerCase();
+      let bVal = (b[sortProgColumn] || '').toLowerCase();
+      if (aVal < bVal) return sortProgDirection === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortProgDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+  
+  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8"><div class="empty">Sense resultats</div></td></tr>'; 
+    const statsSpan = document.getElementById('spreadsheet-prog-stats');
+    if (statsSpan) statsSpan.textContent = '0 registres';
+    return; 
+  }
+  
+  tbody.innerHTML = filtered.map((p) => {
+    const sel = spreadsheetSelectedProgrames.has(p.id);
+    const fields = ['num', 'episodi', 'programa', 'produit', 'dataProd', 'dataEmissio'];
+    return `<tr data-id="${p.id}" class="${sel ? 'selected-row' : ''}" onclick="editProg('${p.id}')">
+      <td><input type="checkbox" ${sel ? 'checked' : ''} onclick="event.stopPropagation(); toggleSpreadsheetProg('${p.id}',this)"></td>
+      ${fields.map((field, idx) => {
+        const bgColor = getProgCellColor(p, field);
+        const textColor = ['#2e7d32', '#1565c0', '#424242', '#ff0000', '#00ff00'].includes(bgColor) ? 'white' : '#1a1a1a';
+        const inputType = field === 'dataProd' || field === 'dataEmissio' ? 'date' : 'text';
+        return `<td class="color-cell editable" data-cell-key="${p.id}|${idx}" style="background-color: ${bgColor}; color: ${textColor};" onclick="event.stopPropagation(); handleCellSelection(event, '${p.id}', ${idx}, this)">
+          <input type="${inputType}" class="spreadsheet-input" value="${esc(p[field]||'')}" style="background:transparent; color:inherit" onchange="updateSpreadsheetProg('${p.id}','${field}',this.value)" onclick="event.stopPropagation()">
+         </td>`;
+      }).join('')}
+      <td style="text-align:center"><button class="line-color-btn" onclick="event.stopPropagation(); showColorPicker((color) => paintFullProgLine('${p.id}', color))">🎨 Color línia</button></td>
+    </tr>`;
+  }).join('');
+  const statsSpan = document.getElementById('spreadsheet-prog-stats');
+  if (statsSpan) statsSpan.textContent = `${filtered.length} registres`;
+}
+
+function updateSpreadsheetProg(id, field, value) { const idx = programes.findIndex(p => p.id === id); if (idx !== -1) { programes[idx][field] = value; saveData(); renderProgramesSpreadsheet(); renderProgramesTable(); } }
+function saveAllProgramesChanges() { saveData(); alert('✅ Canvis guardats'); renderProgramesTable(); renderDashboard(); renderProgramesSpreadsheet(); }
+function addNewProgRow() { programes.push({ id: uid(), num: '', episodi: '', programa: '', produit: '', colorProduit: '#ffffff', dataProd: '', dataEmissio: '' }); saveData(); renderProgramesSpreadsheet(); renderProgramesTable(); updateImportProgSelect(); }
+function toggleSpreadsheetProg(id, cb) { if (cb.checked) spreadsheetSelectedProgrames.add(id); else spreadsheetSelectedProgrames.delete(id); renderProgramesSpreadsheet(); }
+function toggleAllSpreadsheetProgrames(cb) { if (cb.checked) programes.forEach(p => spreadsheetSelectedProgrames.add(p.id)); else spreadsheetSelectedProgrames.clear(); renderProgramesSpreadsheet(); }
+function selectAllSpreadsheetProgrames() { programes.forEach(p => spreadsheetSelectedProgrames.add(p.id)); renderProgramesSpreadsheet(); }
+function deselectAllSpreadsheetProgrames() { spreadsheetSelectedProgrames.clear(); renderProgramesSpreadsheet(); }
+async function deleteSelectedSpreadsheetProgrames() { if (!spreadsheetSelectedProgrames.size) { return; } const n = spreadsheetSelectedProgrames.size; const ok = await showConfirm({ title: `Eliminar ${n} programa${n!==1?'es':''}`, msg: `S'eliminaran ${n} programa${n!==1?'es':''} seleccionat${n!==1?'s':''}. Podràs desfer-ho durant 7 segons.`, icon: '🗑️', confirmLabel: 'Eliminar', confirmClass: 'btn-danger' }); if (!ok) return; const snapD = JSON.parse(JSON.stringify(discos)); const snapP = JSON.parse(JSON.stringify(programes)); discos.forEach(d => { if (spreadsheetSelectedProgrames.has(d.progId)) d.progId = null; }); programes = programes.filter(p => !spreadsheetSelectedProgrames.has(p.id)); spreadsheetSelectedProgrames.clear(); saveData(); renderProgramesSpreadsheet(); renderProgramesTable(); renderDiscosSpreadsheet(); renderDiscosTable(); renderDashboard(); pushUndo(`${n} programa${n!==1?'es':''} eliminat${n!==1?'s':''}`, snapD, snapP); }
+function applyProgFilters() { renderProgramesSpreadsheet(); }
+function clearProgFilters() { 
+  document.querySelectorAll('#programes-spreadsheet .filter-input').forEach(inp => inp.value = ''); 
+  const modeEl = document.getElementById('filter-prog-produit-mode');
+  if (modeEl) modeEl.value = '';
+  renderProgramesSpreadsheet(); 
+}
+async function bulkDeleteProgrames() { if (!selectedProgrames.size) return; const n = selectedProgrames.size; const ok = await showConfirm({ title: `Eliminar ${n} programa${n!==1?'es':''}`, msg: `S'eliminaran ${n} programa${n!==1?'es':''} seleccionat${n!==1?'s':''}. Podràs desfer-ho durant 7 segons.`, icon: '🗑️', confirmLabel: 'Eliminar', confirmClass: 'btn-danger' }); if (!ok) return; const snapD = JSON.parse(JSON.stringify(discos)); const snapP = JSON.parse(JSON.stringify(programes)); discos.forEach(d => { if (selectedProgrames.has(d.progId)) d.progId = null; }); programes = programes.filter(p => !selectedProgrames.has(p.id)); selectedProgrames.clear(); saveData(); renderProgramesTable(); renderDiscosTable(); renderDashboard(); renderProgramesSpreadsheet(); renderDiscosSpreadsheet(); pushUndo(`${n} programa${n!==1?'es':''} eliminat${n!==1?'s':''}`, snapD, snapP); }
+
+function renderDatesSpreadsheet() {
+  const tbody = document.getElementById('dates-spreadsheet-tbody');
+  if (!dates || dates.length === 0) { if (tbody) tbody.innerHTML = '</table><td colspan="7"><div class="empty">No hi ha dates</div>NonNullﬁ'; 
+    const statsSpan = document.getElementById('spreadsheet-dates-stats');
+    if (statsSpan) statsSpan.textContent = '0 registres';
+    return; 
+  }
+  
+  let filteredDates = dates;
+  
+  if (globalDateProgFilter) {
+    filteredDates = dates.filter(d => 
+      (d.numProg1 || '').toLowerCase().includes(globalDateProgFilter) || 
+      (d.numProg2 || '').toLowerCase().includes(globalDateProgFilter)
+    );
+    const statsSpan = document.getElementById('spreadsheet-dates-stats');
+    if (statsSpan) statsSpan.textContent = `${filteredDates.length} resultats (cerca global a tots els anys)`;
+    const yearLabel = document.getElementById('current-year-label');
+    if (yearLabel) yearLabel.textContent = 'Cerca global';
+  } else {
+    filteredDates = dates.filter(d => {
+      const parts = d.data.split('-');
+      const year = parseInt(parts[2]);
+      if (currentYear !== year) return false;
+      if (currentMonth >= 0) { const month = parseInt(parts[1]) - 1; return month === currentMonth; }
+      return true;
+    });
+    const statsSpan = document.getElementById('spreadsheet-dates-stats');
+    if (statsSpan) statsSpan.textContent = `${filteredDates.length} registres (de ${dates.length} totals)`;
+    const yearLabel = document.getElementById('current-year-label');
+    if (yearLabel) yearLabel.textContent = currentYear;
+  }
+  
+  if (filteredDates.length === 0) { 
+    if (tbody) tbody.innerHTML = `<tr><td colspan="7"><div class="empty">No hi ha dates${globalDateProgFilter ? ` amb el número "${globalDateProgFilter}"` : ' per aquest mes/any'}</div></td></tr>`; 
+    return; 
+  }
+  
+  // Ordenació per columna
+  filteredDates = [...filteredDates].sort((a, b) => {
+    let aVal = a[sortDateColumn] || '';
+    let bVal = b[sortDateColumn] || '';
+    if (sortDateColumn === 'data') {
+      aVal = parseDMYToDate(a.data);
+      bVal = parseDMYToDate(b.data);
+      return sortDateDirection === 'asc' ? aVal - bVal : bVal - aVal;
+    }
+    aVal = aVal.toLowerCase();
+    bVal = bVal.toLowerCase();
+    if (aVal < bVal) return sortDateDirection === 'asc' ? -1 : 1;
+    if (aVal > bVal) return sortDateDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+  
+  const darkColors = ['#2e7d32', '#1565c0', '#424242', '#ff0000', '#00ff00'];
+  if (tbody) tbody.innerHTML = filteredDates.map(d => {
+    const bgPod1 = d.colorPodcast1 || '#ffffff';
+    const bgNum1 = d.colorNumProg1 || '#ffffff';
+    const bgPod2 = d.colorPodcast2 || '#ffffff';
+    const bgNum2 = d.colorNumProg2 || '#ffffff';
+    const bgObs = d.colorObs || '#ffffff';
+    
+    const textColor1 = darkColors.includes(bgPod1) ? 'white' : '#1a1a1a';
+    const textColor2 = darkColors.includes(bgNum1) ? 'white' : '#1a1a1a';
+    const textColor3 = darkColors.includes(bgPod2) ? 'white' : '#1a1a1a';
+    const textColor4 = darkColors.includes(bgNum2) ? 'white' : '#1a1a1a';
+    const textColor5 = darkColors.includes(bgObs) ? 'white' : '#1a1a1a';
+    
+    return `<tr>
+      <td class="date-col" style="font-weight:bold;background:#f8f9fc">${esc(d.data)}</td>
+      <td class="color-cell editable" style="background-color: ${bgPod1}; color: ${textColor1};" onclick="showColorPicker((color) => updateDateColor('${d.id}', 'podcast1', color))"><input type="text" class="spreadsheet-input" value="${esc(d.podcast1||'')}" style="background:transparent; color:inherit" onchange="updateDateField('${d.id}','podcast1',this.value)"></td>
+      <td class="color-cell editable" style="background-color: ${bgNum1}; color: ${textColor2};" onclick="showColorPicker((color) => updateDateColor('${d.id}', 'numProg1', color))"><input type="text" class="spreadsheet-input" value="${esc(d.numProg1||'')}" style="background:transparent; color:inherit" onchange="updateDateField('${d.id}','numProg1',this.value)"></td>
+      <td class="color-cell editable" style="background-color: ${bgPod2}; color: ${textColor3};" onclick="showColorPicker((color) => updateDateColor('${d.id}', 'podcast2', color))"><input type="text" class="spreadsheet-input" value="${esc(d.podcast2||'')}" style="background:transparent; color:inherit" onchange="updateDateField('${d.id}','podcast2',this.value)"></td>
+      <td class="color-cell editable" style="background-color: ${bgNum2}; color: ${textColor4};" onclick="showColorPicker((color) => updateDateColor('${d.id}', 'numProg2', color))"><input type="text" class="spreadsheet-input" value="${esc(d.numProg2||'')}" style="background:transparent; color:inherit" onchange="updateDateField('${d.id}','numProg2',this.value)"></td>
+      <td class="color-cell editable" style="background-color: ${bgObs}; color: ${textColor5};" onclick="showColorPicker((color) => updateDateColor('${d.id}', 'obs', color))"><input type="text" class="spreadsheet-input" value="${esc(d.obs||'')}" style="background:transparent; color:inherit" onchange="updateDateField('${d.id}','obs',this.value)"></td>
+      <td style="text-align:center"><button class="line-color-btn" onclick="showColorPicker((color) => paintFullDateLine('${d.id}', color))">🎨 Color línia</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function updateDateField(id, field, value) {
+  const idx = dates.findIndex(d => d.id === id);
+  if (idx !== -1) { dates[idx][field] = value; saveData(); renderDatesSpreadsheet(); }
+}
+
+function updateDateColor(id, field, color) {
+  const idx = dates.findIndex(d => d.id === id);
+  if (idx !== -1) {
+    const fieldMap = { 'podcast1': 'colorPodcast1', 'numProg1': 'colorNumProg1', 'podcast2': 'colorPodcast2', 'numProg2': 'colorNumProg2', 'obs': 'colorObs' };
+    dates[idx][fieldMap[field]] = color;
+    saveData();
+    renderDatesSpreadsheet();
+  }
+}
+
+function paintFullDateLine(dateId, color) {
+  const idx = dates.findIndex(d => d.id === dateId);
+  if (idx !== -1) {
+    dates[idx].colorPodcast1 = color;
+    dates[idx].colorNumProg1 = color;
+    dates[idx].colorPodcast2 = color;
+    dates[idx].colorNumProg2 = color;
+    dates[idx].colorObs = color;
+    saveData();
+    renderDatesSpreadsheet();
+  }
+}
+
+function saveAllDatesChanges() { saveData(); alert('✅ Tots els canvis guardats'); }
+function previousYear() { if (currentYear > 2026) { currentYear--; initMonthSelector(); renderDatesSpreadsheet(); } }
+function nextYear() { if (currentYear < 2030) { currentYear++; initMonthSelector(); renderDatesSpreadsheet(); } }
+function initMonthSelector() {
+  const months = ['Gener', 'Febrer', 'Març', 'Abril', 'Maig', 'Juny', 'Juliol', 'Agost', 'Setembre', 'Octubre', 'Novembre', 'Desembre'];
+  const container = document.getElementById('month-selector');
+  if (!container) return;
+  container.innerHTML = `<button class="month-btn ${currentMonth === -1 ? 'active' : ''}" onclick="setMonth(-1)">📅 Tots</button>` + months.map((m, idx) => `<button class="month-btn ${currentMonth === idx ? 'active' : ''}" onclick="setMonth(${idx})">${m}</button>`).join('');
+}
+function setMonth(month) { currentMonth = month; initMonthSelector(); renderDatesSpreadsheet(); }
+
+async function exportJSON() { 
+  const data = { discos, programes, dates, exportDate: new Date().toISOString() }; 
+  const json = JSON.stringify(data, null, 2);
+  const filename = `podcast_backup_manual_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
+  if (window.showSaveFilePicker) {
+    try {
+      const fh = await window.showSaveFilePicker({
+        suggestedName: filename,
+        types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
+      });
+      const writable = await fh.createWritable();
+      await writable.write(json);
+      await writable.close();
+      showToast('✅ Backup manual exportat');
+      return;
+    } catch(e) { /* usuari ha cancel·lat */ }
+  }
+  const blob = new Blob([json], { type: 'application/json' }); 
+  const a = document.createElement('a'); 
+  a.href = URL.createObjectURL(blob); 
+  a.download = filename; 
+  a.click(); 
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  showToast('✅ Backup manual exportat');
+}
+
+async function importJSON() { 
+  const file = document.getElementById('import-json-file').files[0]; 
+  if (!file) { return; } 
+  const reader = new FileReader(); 
+  reader.onload = async e => { 
+    try { 
+      const data = JSON.parse(e.target.result); 
+      if (!data.discos || !data.programes) throw new Error('Format incorrecte'); 
+      const ok = await showConfirm({ title: 'Importar backup', msg: `Això SOBRESCRIURÀ totes les dades actuals. S\'importaran ${data.discos.length} discos i ${data.programes.length} programes.`, icon: '⚠️', confirmLabel: 'Importar i sobrescriure', confirmClass: 'btn-warn', cancelLabel: 'Cancel·lar' });
+      if (!ok) return;
+      discos = data.discos; 
+      programes = data.programes; 
+      dates = data.dates || generateDates(); 
+      const uniqueDates = new Map(); 
+      for (const date of dates) { 
+        if (!uniqueDates.has(date.data)) { 
+          uniqueDates.set(date.data, date); 
+        } 
+      } 
+      dates = Array.from(uniqueDates.values()); 
+      dates.sort((a, b) => { 
+        const dateA = parseDMYToDate(a.data); 
+        const dateB = parseDMYToDate(b.data); 
+        return dateA - dateB; 
+      }); 
+      saveData(); 
+      alert('✅ Backup restaurat'); 
+      location.reload(); 
+    } catch (err) { alert('Error: ' + err.message); } 
+  }; 
+  reader.readAsText(file); 
+}
+
+function exportCSVDiscos() { 
+  const hdrs = ['Podcast', 'Episodi', 'Temes', 'Autor', 'CD', 'Any', 'Link', 'Nº Programa']; 
+  const rows = discos.map(d => { 
+    const prog = programes.find(p => p.id === d.progId); 
+    return [d.podcast, d.episodi, d.temes, d.autor, d.cd, d.any, d.link, prog ? prog.num : ''].map(v => '"' + String(v || '').replace(/"/g, '""') + '"').join(','); 
+  }); 
+  const blob = new Blob(['\ufeff' + [hdrs.join(','), ...rows].join('\n')], { type: 'text/csv' }); 
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `discos_${ts()}.csv`; a.click(); URL.revokeObjectURL(a.href); 
+}
+
+function exportCSVProgrames() { 
+  const hdrs = ['Nº Programa', 'Episodi', 'Programa', 'Produït', 'Data producció', 'Data emissió']; 
+  const rows = programes.map(p => [p.num, p.episodi, p.programa, p.produit, p.dataProd, p.dataEmissio].map(v => '"' + String(v || '').replace(/"/g, '""') + '"').join(',')); 
+  const blob = new Blob(['\ufeff' + [hdrs.join(','), ...rows].join('\n')], { type: 'text/csv' }); 
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `programes_${ts()}.csv`; a.click(); URL.revokeObjectURL(a.href); 
+}
+
+function exportCSVDates() { 
+  const hdrs = ['Data', 'Podcast 1', 'Nº Prog 1', 'Podcast 2', 'Nº Prog 2', 'Observacions']; 
+  const rows = dates.map(d => [d.data, d.podcast1, d.numProg1, d.podcast2, d.numProg2, d.obs].map(v => '"' + String(v || '').replace(/"/g, '""') + '"').join(',')); 
+  const blob = new Blob(['\ufeff' + [hdrs.join(','), ...rows].join('\n')], { type: 'text/csv' }); 
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `dates_${ts()}.csv`; a.click(); URL.revokeObjectURL(a.href); 
+}
+
+function renderRelacions() { 
+  const el = document.getElementById('relacions-content'); 
+  if (!programes.length) { if (el) el.innerHTML = '<div class="empty">Sense programes</div>'; return; } 
+  if (el) el.innerHTML = programes.map(p => { 
+    const linked = discos.filter(d => d.progId === p.id); 
+    return `<div class="card"><strong>#${esc(p.num)}</strong> ${esc(p.programa||'')}<br><span style="font-size:15px">${linked.length} discos</span></div>`; 
+  }).join(''); 
+}
+
+function updateImportProgSelect() { 
+  const sel = document.getElementById('import-prog-select'); 
+  if (!sel) return;
+  sel.innerHTML = '<option value="">-- Sense --</option>' + programes.map(p => `<option value="${p.id}">#${esc(p.num)}</option>`).join(''); 
+}
+
+const sections = ['dashboard','discos-list','discos-spreadsheet','discos-form','programes-list','programes-spreadsheet','programes-form','dates','relacions','importacio-rapida','generador','exportar'];
+function showSection(id) { 
+  sections.forEach(s=>{
+    const el = document.getElementById(s);
+    if(el) el.classList.remove('active');
+  }); 
+  const activeEl = document.getElementById(id);
+  if(activeEl) activeEl.classList.add('active'); 
+  if(id==='dashboard') renderDashboard(); 
+  if(id==='discos-list'){ renderProgFilterOptions(); renderDiscosTable(); } 
+  if(id==='discos-spreadsheet') renderDiscosSpreadsheet(); 
+  if(id==='programes-list') renderProgramesTable(); 
+  if(id==='programes-spreadsheet') renderProgramesSpreadsheet(); 
+  if(id==='dates') { initMonthSelector(); renderDatesSpreadsheet(); } 
+  if(id==='relacions') renderRelacions(); 
+  if(id==='importacio-rapida') updateImportProgSelect(); 
+  if(id==='discos-form'){ renderProgSelectorList(); actualitzarLlistaDiscosOrdenats(); } 
+}
+
+function renderProgFilterOptions() { 
+  const sel = document.getElementById('disco-filter-prog'); 
+  if (!sel) return; 
+  sel.innerHTML = '<option value="">Tots els programes</option>' + programes.map(p=>`<option value="${p.id}">#${esc(p.num)} ${esc(p.programa||'')}</option>`).join(''); 
+}
+
+// ===================== GENERADOR DE DISCOS (Jazz Expresso) =====================
+// Variables i funcions del generador
+const GEN_PALETTE = ["#c9973e","#2f5a52","#8a3324","#6b6b2f","#3d5a80","#6b3fa0","#b5533c","#2e5339"];
+let gen_counter = 0;
+
+function gen_addAlbum(){
+  gen_counter++;
+  const container = document.getElementById('gen-albums');
+  const div = document.createElement('div');
+  div.className = 'gen-album';
+  div.dataset.id = gen_counter;
+
+  let swatchesHTML = '';
+  GEN_PALETTE.forEach((c,i)=>{
+    const sel = (i === (gen_counter-1) % GEN_PALETTE.length) ? ' sel' : '';
+    swatchesHTML += `<div class="gen-swatch${sel}" style="background:${c}" data-color="${c}"></div>`;
+  });
+
+  div.innerHTML = `
+    <div class="gen-album-top">
+      <span class="gen-album-tag">Disc ${String(gen_counter).padStart(2,'0')}</span>
+      <div class="gen-btns-row">
+        <button class="gen-btn small danger" onclick="gen_removeAlbum(this)">Eliminar</button>
+      </div>
+    </div>
+
+    <label>Portada</label>
+    <div class="gen-img-row">
+      <div class="gen-paste-zone" tabindex="0">
+        <span>Enganxa (Ctrl+V) o fes clic per pujar una imatge</span>
+        <img class="preview-img" style="display:none;">
+      </div>
+      <div class="gen-img-actions">
+        <input type="file" class="f-imgfile" accept="image/*" style="display:none;">
+        <button type="button" class="gen-btn ghost small f-imgbtn">Tria un fitxer…</button>
+        <button type="button" class="gen-btn ghost small f-imgclear" style="margin-left:6px;">Treure imatge</button>
+        <p class="gen-hint">Clica dins el requadre i fes Ctrl+V (o Cmd+V) per enganxar una imatge copiada, o tria un fitxer.</p>
+      </div>
+    </div>
+
+    <div class="gen-row3">
+      <div><label>Títol</label><input type="text" class="f-titol" placeholder="Where in the World"></div>
+      <div><label>Autor</label><input type="text" class="f-autor" placeholder="Tom Ollendorff"></div>
+      <div><label>Any</label><input type="text" class="f-any" placeholder="2025"></div>
+    </div>
+    <label>Descripció</label>
+    <textarea class="f-descripcio"></textarea>
+    <div class="gen-row2">
+      <div><label>Escoltem</label><input type="text" class="f-escoltem" placeholder="Past Lives i Three Bridges"></div>
+      <div><label>Enllaç</label><input type="text" class="f-link" placeholder="https://..."></div>
+    </div>
+    <label>Color d'accent</label>
+    <div class="gen-swatches">${swatchesHTML}</div>
+    <div class="gen-move-btns" style="margin-top:8px;">
+      <button class="gen-move-btn" onclick="gen_mouDisc(this, -1)">⬆</button>
+      <button class="gen-move-btn" onclick="gen_mouDisc(this, 1)">⬇</button>
+    </div>
+  `;
+
+  container.appendChild(div);
+  gen_wireImage(div);
+  gen_wireSwatches(div);
+  // Guardar estat després d'afegir
+  gen_guardarEstat();
+  gen_actualitzarBotonsMoviment();
+}
+
+function gen_removeAlbum(btn){
+  btn.closest('.gen-album').remove();
+  gen_renumber();
+  gen_guardarEstat();
+  gen_actualitzarBotonsMoviment();
+}
+
+function gen_renumber(){
+  // Ja no mostrem numeració a l'etiqueta, només actualitzem l'atribut
+  document.querySelectorAll('.gen-album').forEach((a,i)=>{
+    // No canviem el text visible, només mantenim l'ordre
+  });
+}
+
+function gen_mouDisc(btn, direccio) {
+  const album = btn.closest('.gen-album');
+  const container = document.getElementById('gen-albums');
+  const children = Array.from(container.children);
+  const idx = children.indexOf(album);
+  const novaPos = idx + direccio;
+  if (novaPos < 0 || novaPos >= children.length) return;
+  
+  // Moure l'element
+  if (direccio === -1) {
+    container.insertBefore(album, children[novaPos]);
+  } else {
+    container.insertBefore(album, children[novaPos + 1]);
+  }
+  gen_guardarEstat();
+  gen_actualitzarBotonsMoviment();
+}
+
+function gen_actualitzarBotonsMoviment() {
+  const albums = document.querySelectorAll('.gen-album');
+  albums.forEach((a, i) => {
+    const btns = a.querySelectorAll('.gen-move-btn');
+    if (btns.length >= 2) {
+      btns[0].disabled = (i === 0);
+      btns[1].disabled = (i === albums.length - 1);
+    }
+  });
+}
+
+function gen_wireImage(div){
+  const zone = div.querySelector('.gen-paste-zone');
+  const preview = div.querySelector('.preview-img');
+  const fileInput = div.querySelector('.f-imgfile');
+  const chooseBtn = div.querySelector('.f-imgbtn');
+  const clearBtn = div.querySelector('.f-imgclear');
+
+  function setImage(dataUrl){
+    preview.src = dataUrl;
+    preview.style.display = 'block';
+    zone.classList.add('has-img');
+    zone.dataset.img = dataUrl;
+    gen_guardarEstat();
+  }
+  function clearImage(){
+    preview.src = '';
+    preview.style.display = 'none';
+    zone.classList.remove('has-img');
+    delete zone.dataset.img;
+    gen_guardarEstat();
+  }
+  function readFile(file){
+    if(!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = e => setImage(e.target.result);
+    reader.readAsDataURL(file);
+  }
+
+  zone.addEventListener('click', ()=> fileInput.click());
+  chooseBtn.addEventListener('click', ()=> fileInput.click());
+  clearBtn.addEventListener('click', clearImage);
+  fileInput.addEventListener('change', e => readFile(e.target.files[0]));
+  zone.addEventListener('paste', e => {
+    const items = e.clipboardData.items;
+    for(const item of items){
+      if(item.type.startsWith('image/')){ readFile(item.getAsFile()); e.preventDefault(); break; }
+    }
+  });
+  zone.addEventListener('dragover', e => e.preventDefault());
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    if(e.dataTransfer.files && e.dataTransfer.files[0]) readFile(e.dataTransfer.files[0]);
+  });
+}
+
+function gen_wireSwatches(div){
+  const swatches = div.querySelectorAll('.gen-swatch');
+  swatches.forEach(s => {
+    s.onclick = () => {
+      swatches.forEach(x => x.classList.remove('sel'));
+      s.classList.add('sel');
+      gen_guardarEstat();
+    };
+  });
+}
+
+// ===== NOVA FUNCIÓ: NETEGAR TOT EL GENERADOR =====
+function gen_netejarTot() {
+  if (!confirm('Això eliminarà tots els discos del generador i deixarà un disc buit. Vols continuar?')) return;
+  
+  // Netejar el contenidor de discos
+  const container = document.getElementById('gen-albums');
+  container.innerHTML = '';
+  gen_counter = 0;
+  
+  // Afegir un disc buit
+  gen_addAlbum();
+  
+  // Guardar l'estat net
+  gen_guardarEstat();
+  
+  // Netejar el codi generat (opcional)
+  document.getElementById('gen-output').value = '';
+  
+  showToast('🧹 Generador netejat. Comença a seleccionar nous discos.');
+}
+
+function gen_generate(){
+  const programa = esc(document.getElementById('gen-programa').value);
+  const emissora = esc(document.getElementById('gen-emissora').value);
+  const titol = esc(document.getElementById('gen-titol').value);
+  const intro = document.getElementById('gen-intro').value;
+
+  let entries = '';
+  const albumEls = document.querySelectorAll('.gen-album');
+  albumEls.forEach((a, idx)=>{
+    const num = String(idx+1).padStart(2,'0');
+    const at = esc(a.querySelector('.f-titol').value);
+    const any = esc(a.querySelector('.f-any').value);
+    const autor = esc(a.querySelector('.f-autor').value);
+    const descripcio = esc(a.querySelector('.f-descripcio').value);
+    const escoltem = esc(a.querySelector('.f-escoltem').value);
+    const link = esc(a.querySelector('.f-link').value);
+    const colorSel = a.querySelector('.gen-swatch.sel');
+    const color = colorSel ? colorSel.dataset.color : GEN_PALETTE[idx % GEN_PALETTE.length];
+    const img = a.querySelector('.gen-paste-zone').dataset.img || '';
+
+    // CONVERTIR SALTS DE LÍNIA EN PARÀGRAFS
+    const paragrafs = descripcio.split('\n').filter(p => p.trim() !== '').map(p => `<p>${p.trim()}</p>`).join('');
+
+    entries += `
+  <div class="je-entry" style="--je-accent:${color};">
+    <div class="je-entry-head">
+      <div class="je-cover-holder">
+        ${img ? `<img class="je-cover" src="${img}" alt="${at}">` : `<div class="je-cover je-cover-placeholder"></div>`}
+      </div>
+      <div class="je-entry-heading">
+        <div class="je-eyebrow"><span class="je-num">${autor}</span></div>
+        <h2 class="je-album">${at} <span class="je-year-tag">${any}</span></h2>
+        <div class="je-artist">${autor}</div>
+      </div>
+    </div>
+
+    <div class="je-bio">${paragrafs}</div>
+
+    <div class="je-listen">
+      <div class="je-txt">Escoltem: <b>${escoltem}</b></div>
+      <a href="${link}" target="_blank" rel="noopener">Enllaç ↗</a>
+    </div>
+  </div>
+`;
+  });
+
+  const full = `<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+.je-jazzpost{--ink:#171411;--parchment:#efe6d3;--parchment-dim:#ded1b3;--brass:#c9973e;--rule:rgba(239,230,211,0.18);background:radial-gradient(ellipse at 20% -10%, rgba(201,151,62,0.10), transparent 55%),var(--ink);color:var(--parchment);font-family:'Work Sans',sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased;padding:36px 24px 60px;border-radius:6px;max-width:760px;margin:0 auto;}
+.je-jazzpost *{box-sizing:border-box;}
+.je-jazzpost a{text-decoration:none;}
+.je-jazzpost .je-hero{padding:30px 0 40px;text-align:left;border-bottom:1px solid var(--rule);margin-bottom:50px;}
+.je-jazzpost .je-kicker{font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:0.22em;text-transform:uppercase;color:var(--brass);display:flex;align-items:center;gap:10px;margin-bottom:22px;}
+.je-jazzpost .je-kicker::before{content:"";width:20px;height:1px;background:var(--brass);}
+.je-jazzpost h1.je-title{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(32px,6vw,52px);line-height:1.06;margin:0 0 20px;letter-spacing:-0.01em;color:var(--parchment);}
+.je-jazzpost p.je-lede{font-size:16.5px;max-width:56ch;color:var(--parchment-dim);margin:0;}
+.je-jazzpost p.je-lede em{color:var(--brass);font-style:normal;}
+.je-jazzpost .je-entry{position:relative;padding:40px 0 44px;border-bottom:1px solid var(--rule);}
+.je-jazzpost .je-entry:last-of-type{border-bottom:none;}
+.je-jazzpost .je-entry-head{display:flex;gap:22px;align-items:flex-start;margin-bottom:20px;}
+.je-jazzpost .je-cover-holder{flex:0 0 auto;}
+.je-jazzpost .je-cover{width:104px;height:104px;object-fit:cover;border-radius:4px;display:block;border:1px solid var(--rule);box-shadow:0 8px 22px rgba(0,0,0,0.35);}
+.je-jazzpost .je-cover-placeholder{width:104px;height:104px;border-radius:4px;border:1px dashed var(--rule);background:rgba(239,230,211,0.03);}
+.je-jazzpost .je-entry-heading{flex:1 1 auto;min-width:0;padding-top:4px;}
+.je-jazzpost .je-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:0.14em;text-transform:uppercase;margin-bottom:8px;color:var(--je-accent,var(--brass));}
+.je-jazzpost h2.je-album{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(22px,3.4vw,30px);margin:0 0 6px;line-height:1.14;color:var(--parchment);}
+.je-jazzpost .je-artist{font-family:'Fraunces',serif;font-style:italic;font-weight:400;font-size:16px;color:var(--parchment-dim);}
+.je-jazzpost .je-year-tag{font-family:'IBM Plex Mono',monospace;font-size:11.5px;opacity:0.6;margin-left:8px;}
+.je-jazzpost .je-bio{font-size:15.5px;color:var(--parchment-dim);margin:0 0 22px;max-width:64ch;text-align:justify;}
+.je-jazzpost .je-bio p{margin:0 0 1em;}
+.je-jazzpost .je-bio p:last-child{margin-bottom:0;}
+.je-jazzpost .je-listen{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;padding:16px 20px;background:rgba(239,230,211,0.04);border:1px solid var(--rule);border-radius:2px;}
+.je-jazzpost .je-listen .je-txt{font-size:13.5px;color:var(--parchment-dim);}
+.je-jazzpost .je-listen .je-txt b{color:var(--parchment);}
+.je-jazzpost .je-listen a{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink);background:var(--je-accent,var(--brass));padding:9px 16px;white-space:nowrap;display:inline-block;}
+.je-jazzpost .je-listen a:hover{filter:brightness(1.08);}
+.je-jazzpost .je-footer{margin-top:50px;padding-top:24px;border-top:1px solid var(--rule);font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--parchment-dim);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+</style>
+
+<div class="je-jazzpost">
+
+  <div class="je-hero">
+    <div class="je-kicker">${programa} &nbsp;·&nbsp; ${emissora}</div>
+    <h1 class="je-title">${titol}</h1>
+    <p class="je-lede">${intro}</p>
+  </div>
+${entries}
+  <div class="je-footer">
+    <span>${programa} · ${emissora}</span>
+    <span>${albumEls.length} discos</span>
+  </div>
+
+</div>`;
+
+  document.getElementById('gen-output').value = full;
+}
+
+function gen_copyOutput(){
+  const out = document.getElementById('gen-output');
+  if(!out.value){ gen_generate(); }
+  out.select();
+  navigator.clipboard.writeText(out.value).then(()=>{
+    const msg = document.getElementById('gen-copiedMsg');
+    msg.classList.add('show');
+    setTimeout(()=>msg.classList.remove('show'), 1800);
+  }).catch(()=>{ document.execCommand('copy'); });
+}
+
+// ===== FUNCIONS DE PERSISTÈNCIA DEL GENERADOR =====
+function gen_guardarEstat() {
+  try {
+    const estat = {
+      programa: document.getElementById('gen-programa').value,
+      emissora: document.getElementById('gen-emissora').value,
+      titol: document.getElementById('gen-titol').value,
+      intro: document.getElementById('gen-intro').value,
+      discos: []
+    };
+    const albumEls = document.querySelectorAll('.gen-album');
+    albumEls.forEach(a => {
+      const titol = a.querySelector('.f-titol').value;
+      const autor = a.querySelector('.f-autor').value;
+      const any = a.querySelector('.f-any').value;
+      const descripcio = a.querySelector('.f-descripcio').value;
+      const escoltem = a.querySelector('.f-escoltem').value;
+      const link = a.querySelector('.f-link').value;
+      const img = a.querySelector('.gen-paste-zone').dataset.img || '';
+      const colorSel = a.querySelector('.gen-swatch.sel');
+      const color = colorSel ? colorSel.dataset.color : '#c9973e';
+      estat.discos.push({ titol, autor, any, descripcio, escoltem, link, img, color });
+    });
+    localStorage.setItem('jazz_expresso_generator_state', JSON.stringify(estat));
+  } catch(e) { /* ignorar errors de quota */ }
+}
+
+function gen_restaurarEstat() {
+  const data = localStorage.getItem('jazz_expresso_generator_state');
+  if (!data) return;
+  try {
+    const estat = JSON.parse(data);
+    document.getElementById('gen-programa').value = estat.programa || 'Jazz Expresso';
+    document.getElementById('gen-emissora').value = estat.emissora || 'Sants 3 Ràdio';
+    document.getElementById('gen-titol').value = estat.titol || 'Quatre discos per a la nit';
+    document.getElementById('gen-intro').value = estat.intro || '';
+    // Netejar discos actuals
+    const container = document.getElementById('gen-albums');
+    container.innerHTML = '';
+    gen_counter = 0;
+    estat.discos.forEach(d => {
+      gen_addAlbum();
+      const a = container.lastElementChild;
+      a.querySelector('.f-titol').value = d.titol || '';
+      a.querySelector('.f-autor').value = d.autor || '';
+      a.querySelector('.f-any').value = d.any || '';
+      a.querySelector('.f-descripcio').value = d.descripcio || '';
+      a.querySelector('.f-escoltem').value = d.escoltem || '';
+      a.querySelector('.f-link').value = d.link || '';
+      if (d.img) {
+        const zone = a.querySelector('.gen-paste-zone');
+        zone.dataset.img = d.img;
+        const preview = zone.querySelector('.preview-img');
+        preview.src = d.img;
+        preview.style.display = 'block';
+        zone.classList.add('has-img');
+      }
+      // Color
+      const swatches = a.querySelectorAll('.gen-swatch');
+      swatches.forEach(s => {
+        if (s.dataset.color === d.color) {
+          swatches.forEach(x => x.classList.remove('sel'));
+          s.classList.add('sel');
+        }
+      });
+    });
+    // Reassignar swatch events
+    document.querySelectorAll('.gen-album').forEach(a => gen_wireSwatches(a));
+    gen_actualitzarBotonsMoviment();
+  } catch(e) {
+    console.warn('Error restaurant estat del generador', e);
+  }
+}
+
+function gen_exportarJSON() {
+  gen_guardarEstat(); // actualitzar abans d'exportar
+  const data = localStorage.getItem('jazz_expresso_generator_state');
+  if (!data) return;
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `jazz_expresso_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function gen_importarJSON(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.discos || !Array.isArray(data.discos)) throw new Error('Format invalid');
+      localStorage.setItem('jazz_expresso_generator_state', JSON.stringify(data));
+      gen_restaurarEstat();
+      showToast('✅ Estat del generador restaurat');
+    } catch(err) {
+      alert('Error: el fitxer no té el format correcte.');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ===== FUNCIÓ PER CARREGAR DISCOS SELECCIONATS DES DEL FULL =====
+function gen_carregarDiscos(dades) {
+  // Netejar tots els discos existents
+  const container = document.getElementById('gen-albums');
+  container.innerHTML = '';
+  gen_counter = 0;
+
+  // Si no hi ha dades, afegir un disc buit
+  if (!dades || dades.length === 0) {
+    gen_addAlbum();
+    gen_actualitzarBotonsMoviment();
+    return;
+  }
+
+  // Per cada disc, afegir-lo i omplir camps
+  dades.forEach((disc) => {
+    gen_addAlbum();
+    const d = container.lastElementChild;
+    d.querySelector('.f-titol').value = disc.titol || '';
+    d.querySelector('.f-autor').value = disc.autor || '';
+    d.querySelector('.f-any').value = disc.any || '';
+    d.querySelector('.f-descripcio').value = disc.descripcio || '';
+    d.querySelector('.f-escoltem').value = disc.escoltem || '';
+    d.querySelector('.f-link').value = disc.link || '';
+  });
+  gen_guardarEstat();
+  gen_actualitzarBotonsMoviment();
+}
+
+// ===== ENVIAR SELECCIONATS DEL FULL AL GENERADOR =====
+function enviarSeleccionatsAlGenerador() {
+  const ids = Array.from(spreadsheetSelectedDiscos);
+  if (ids.length === 0) {
+    alert('Si us plau, selecciona almenys un disc (marca les caselles de la primera columna).');
+    return;
+  }
+
+  const discosSeleccionats = discos.filter(d => ids.includes(d.id));
+  if (discosSeleccionats.length === 0) {
+    alert('No s\'han trobat els discos seleccionats.');
+    return;
+  }
+
+  // Mapejar les dades als camps del generador
+  const dades = discosSeleccionats.map(d => ({
+    titol: d.cd || 'Disc sense títol',
+    autor: d.autor || 'Artista',
+    any: d.any || '',
+    descripcio: d.notes || '',
+    escoltem: d.temes || '',
+    link: d.link || '#'
+  }));
+
+  // Carregar al generador
+  gen_carregarDiscos(dades);
+
+  // --- Generar títol del post a partir dels autors ---
+  const autors = discosSeleccionats
+    .map(d => d.autor)
+    .filter(a => a && a.trim() !== '');
+  let titolPost = '';
+  if (autors.length === 0) {
+    titolPost = 'Discos seleccionats';
+  } else if (autors.length === 1) {
+    titolPost = autors[0] + '.';
+  } else {
+    titolPost = autors.join(', ') + '.';
+  }
+  document.getElementById('gen-titol').value = titolPost;
+  gen_guardarEstat();
+
+  // Canviar a la pestanya del generador
+  showSection('generador');
+  showToast(`✅ S'han enviat ${dades.length} discos al generador.`);
+}
+
+// ===================== INICIALITZACIÓ =====================
+// loadData() és async i fa tots els renders un cop les dades estan carregades.
+loadData();
+
+document.addEventListener('copy', (e) => {
+  if (selectedCells.size > 0) {
+    e.preventDefault();
+    copySelectedCells();
+  }
+});
+
+// ===================== REDIMENSIONAT MANUAL DE COLUMNES =====================
+(function() {
+  function initColResizers(table) {
+    if (!table || table.dataset.resizeInited) return;
+    table.dataset.resizeInited = '1';
+    const ths = table.querySelectorAll('thead th');
+    ths.forEach((th, i) => {
+      if (i === 0 || i === ths.length - 1) return;
+      th.style.position = 'relative';
+      const resizer = document.createElement('div');
+      resizer.className = 'col-resizer';
+      resizer.title = 'Arrossega per canviar l\'amplada';
+      th.appendChild(resizer);
+
+      let startX, startW;
+
+      resizer.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        startX = e.clientX;
+        startW = th.offsetWidth;
+        resizer.classList.add('resizing');
+
+        function onMouseMove(ev) {
+          const newW = Math.max(50, startW + (ev.clientX - startX));
+          th.style.width = newW + 'px';
+          th.style.minWidth = newW + 'px';
+          const idx = Array.from(ths).indexOf(th);
+          table.querySelectorAll('tbody tr').forEach(row => {
+            const td = row.cells[idx];
+            if (td) { td.style.width = newW + 'px'; td.style.minWidth = newW + 'px'; }
+          });
+        }
+
+        function onMouseUp() {
+          resizer.classList.remove('resizing');
+          document.removeEventListener('mousemove', onMouseMove);
+          document.removeEventListener('mouseup', onMouseUp);
+        }
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+      });
+
+      resizer.addEventListener('click', e => e.stopPropagation());
+    });
+  }
+
+  const observer = new MutationObserver(() => {
+    document.querySelectorAll('.spreadsheet-table').forEach(t => initColResizers(t));
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  document.querySelectorAll('.spreadsheet-table').forEach(t => initColResizers(t));
+})();
+</script>
+</body>
+</html>
