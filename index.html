@@ -1879,7 +1879,7 @@ input[type="checkbox"] {
 <div id="exportar" class="section">
   <h2>💾 Backup</h2>
 
-  <!-- NOU: Fitxer persistent -->
+  <!-- Fitxer persistent -->
   <div class="card" style="border:2px solid #27ae60;background:#f0faf4">
     <h3 style="margin:0 0 10px;color:#27ae60">📂 Fitxer de dades persistent <span style="font-size:12px;background:#27ae60;color:#fff;border-radius:10px;padding:2px 8px;margin-left:6px">RECOMANAT</span></h3>
     <div id="file-status" style="margin-bottom:12px;font-size:14px">
@@ -1888,9 +1888,11 @@ input[type="checkbox"] {
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
       <button class="btn btn-success" onclick="createNewDataFile()">🆕 Crear fitxer nou</button>
       <button class="btn" onclick="openDataFile()" style="background:#2980b9;color:#fff">📂 Obrir fitxer existent</button>
+      <button class="btn" onclick="descarregarFitxerActiu()" style="background:#8e44ad;color:#fff">📥 Descarregar fitxer actiu</button>
       <button class="btn" id="btn-desconnectar-fitxer" onclick="desconnectarFitxer()" style="background:#e74c3c;color:#fff;display:none">✖ Desconnectar fitxer</button>
     </div>
     <p style="font-size:12px;color:#666;margin:10px 0 0">ℹ️ Un cop vinculat, <strong>cada canvi es desa automàticament al fitxer del teu disc</strong>. El fitxer es pot guardar on vulguis (escriptori, OneDrive, Google Drive...).</p>
+    <p style="font-size:12px;color:#666;margin:6px 0 0">📱 Si estàs a l'iPad, fes servir "Descarregar fitxer actiu" per desar el fitxer al teu dispositiu.</p>
   </div>
 
   <!-- Backup manual JSON -->
@@ -1992,6 +1994,11 @@ function uid() { return Date.now().toString(36) + Math.random().toString(36).sli
 function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function fmt(d) { if (!d) return ''; try { const [y,m,day]=d.split('-'); return `${day}/${m}/${y}`; } catch(e) { return d; } }
 function ts() { return new Date().toISOString().slice(0,10); }
+
+// ===================== DETECCIÓ iPAD / MÒBIL =====================
+function isFileSystemAPIAvailable() {
+  return 'showOpenFilePicker' in window && 'showSaveFilePicker' in window;
+}
 
 // ===================== ORDENACIÓ =====================
 function sortDiscos(column) {
@@ -2693,7 +2700,20 @@ async function readFromFile(handle) {
 // Crear fitxer nou
 async function createNewDataFile() {
   if (!window.showSaveFilePicker) {
-    alert('El teu navegador no suporta aquesta funció. Usa Chrome, Edge o Comet.'); return;
+    alert('El teu navegador no suporta aquesta funció. Usa Chrome, Edge o Comet.');
+    // Fallback: descàrrega clàssica
+    const data = { discos, programes, dates, savedAt: new Date().toISOString() };
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'podcast_dades.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    showToast('✅ Fitxer descarregat. Obre\'l amb "Obrir fitxer existent" per vincular-lo.');
+    return;
   }
   try {
     const handle = await window.showSaveFilePicker({
@@ -2713,9 +2733,10 @@ async function createNewDataFile() {
 
 // Obrir fitxer existent
 async function openDataFile() {
-  if (!window.showOpenFilePicker) {
-    // Fallback: input file clàssic
-    document.getElementById('import-json-file').click(); return;
+  // Si no hi ha l'API, fem servir l'input file clàssic
+  if (!isFileSystemAPIAvailable()) {
+    document.getElementById('import-json-file').click();
+    return;
   }
   try {
     const [handle] = await window.showOpenFilePicker({
@@ -2736,6 +2757,25 @@ async function openDataFile() {
   } catch(e) {
     if (e.name !== 'AbortError') console.error(e);
   }
+}
+
+// Descarregar fitxer actiu (per a iPad / navegadors sense API)
+function descarregarFitxerActiu() {
+  if (!fileHandle) {
+    alert('No hi ha cap fitxer actiu. Primer obre o crea un fitxer.');
+    return;
+  }
+  const data = { discos, programes, dates, savedAt: new Date().toISOString() };
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = fileHandle.name || 'podcast_dades.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  showToast('✅ Fitxer descarregat');
 }
 
 function updateFileStatus(name, ok) {
@@ -4122,26 +4162,33 @@ async function exportJSON() {
   const data = { discos, programes, dates, exportDate: new Date().toISOString() }; 
   const json = JSON.stringify(data, null, 2);
   const filename = `podcast_backup_manual_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
-  if (window.showSaveFilePicker) {
-    try {
-      const fh = await window.showSaveFilePicker({
-        suggestedName: filename,
-        types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
-      });
-      const writable = await fh.createWritable();
-      await writable.write(json);
-      await writable.close();
-      showToast('✅ Backup manual exportat');
-      return;
-    } catch(e) { /* usuari ha cancel·lat */ }
+  
+  // Si l'API no està disponible, descàrrega clàssica
+  if (!isFileSystemAPIAvailable()) {
+    const blob = new Blob([json], { type: 'application/json' }); 
+    const a = document.createElement('a'); 
+    a.href = URL.createObjectURL(blob); 
+    a.download = filename; 
+    document.body.appendChild(a);
+    a.click(); 
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    showToast('✅ Backup manual exportat');
+    return;
   }
-  const blob = new Blob([json], { type: 'application/json' }); 
-  const a = document.createElement('a'); 
-  a.href = URL.createObjectURL(blob); 
-  a.download = filename; 
-  a.click(); 
-  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-  showToast('✅ Backup manual exportat');
+  
+  // Si l'API està disponible
+  try {
+    const fh = await window.showSaveFilePicker({
+      suggestedName: filename,
+      types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
+    });
+    const writable = await fh.createWritable();
+    await writable.write(json);
+    await writable.close();
+    showToast('✅ Backup manual exportat');
+    return;
+  } catch(e) { /* usuari ha cancel·lat */ }
 }
 
 async function importJSON() { 
